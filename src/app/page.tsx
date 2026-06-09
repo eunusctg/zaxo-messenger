@@ -174,11 +174,11 @@ function UserApp() {
     switch (currentTab) {
       case 'chats':
         return (
-          <div className="flex h-full">
-            <div className={`${isViewingChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-border`}>
+          <div className="flex h-full min-h-0">
+            <div className={`${isViewingChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col min-h-0 border-r border-border`}>
               <ChatList onNewChat={() => setOverlay('contacts')} />
             </div>
-            <div className={`${isViewingChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
+            <div className={`${isViewingChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-h-0`}>
               <ChatView
                 onOpenMediaGallery={(m) => setMediaGalleryMsg(m)}
                 onOpenWallpaper={() => setOverlay('chat-wallpaper')}
@@ -198,7 +198,7 @@ function UserApp() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-background overflow-hidden">
+    <div className="flex h-full flex-col bg-background overflow-hidden min-h-0">
       {/* App Lock Screen */}
       {isAppLocked && <AppLockScreen />}
 
@@ -214,7 +214,7 @@ function UserApp() {
       </div>
 
       {/* Main content - scrollable area */}
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentTab + overlay}
@@ -222,7 +222,7 @@ function UserApp() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute inset-0"
+            className="h-full min-h-0"
           >
             {renderContent()}
           </motion.div>
@@ -313,7 +313,7 @@ function AdminApp() {
   };
 
   return (
-    <div className="flex h-full bg-background overflow-hidden">
+    <div className="flex h-full bg-background overflow-hidden min-h-0">
       {/* Sidebar */}
       <aside
         className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 shrink-0 ${

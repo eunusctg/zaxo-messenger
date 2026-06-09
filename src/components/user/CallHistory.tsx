@@ -406,7 +406,7 @@ export default function CallHistory() {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       {/* Header */}
       <div className="px-3 sm:px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-3">

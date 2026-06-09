@@ -152,7 +152,7 @@ export default function ChatList({ onNewChat }: { onNewChat?: () => void }) {
   };
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <h1 className="text-xl font-bold">Chats</h1>

@@ -435,7 +435,7 @@ export default function ChatView({
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       {/* Chat Header - FIXED: proper z-index to stay above messages */}
       <div className="relative z-30 flex items-center gap-2 sm:gap-3 border-b px-2 sm:px-4 py-2 sm:py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shrink-0">
         {/* Back button - mobile */}

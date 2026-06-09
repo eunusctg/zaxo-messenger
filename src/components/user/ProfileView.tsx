@@ -170,7 +170,7 @@ export default function ProfileView() {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <ScrollArea className="flex-1">
         {/* Profile header */}
         <div className="flex flex-col items-center pt-6 pb-4 px-4">

@@ -70,7 +70,7 @@ export default function QRScanner() {
   }, [handleCloseResult]);
 
   return (
-    <div className="flex h-full flex-col bg-background relative">
+    <div className="flex h-full flex-col bg-background relative min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2 z-10">
         <h1 className="text-xl font-bold">Scan QR Code</h1>

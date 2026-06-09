@@ -170,7 +170,7 @@ function PrivacySettings({ onBack }: { onBack: () => void }) {
   } = useSettingsStore();
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Privacy" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Who can see my personal info">
@@ -270,7 +270,7 @@ function NotificationSettings({ onBack }: { onBack: () => void }) {
   const tones = ['Default', 'Chime', 'Bell', 'Ping', 'None'];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Notifications" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Message notifications">
@@ -378,7 +378,7 @@ function AppearanceSettings({ onBack }: { onBack: () => void }) {
   const wallpapers = ['Default', 'Dark', 'Gradient', 'Nature', 'Abstract', 'Minimal', 'Ocean', 'Sunset'];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Appearance" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Theme">
@@ -545,7 +545,7 @@ function SecuritySettings({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Security" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Authentication">
@@ -695,7 +695,7 @@ function StorageSettings({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Storage & Data" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Storage usage">
@@ -824,7 +824,7 @@ function AccountSettings({ onBack }: { onBack: () => void }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Account" onBack={onBack} />
       <ScrollArea className="flex-1">
         {/* Profile section */}
@@ -975,7 +975,7 @@ function AccountSettings({ onBack }: { onBack: () => void }) {
 // ========== Help & Support Settings ==========
 function HelpSettings({ onBack }: { onBack: () => void }) {
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Help & Support" onBack={onBack} />
       <ScrollArea className="flex-1">
         <SettingSection title="Help">
@@ -1126,7 +1126,7 @@ function AllSettingsHub({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Settings" onBack={onBack} />
       <ScrollArea className="flex-1">
         {settingsGroups.map((group, gi) => (
