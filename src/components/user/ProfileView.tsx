@@ -19,6 +19,16 @@ import {
   Settings,
   Eye,
   Key,
+  Palette,
+  HardDrive,
+  HelpCircle,
+  Camera,
+  Star,
+  Zap,
+  Users,
+  Fingerprint,
+  Database,
+  Info,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -27,7 +37,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore, useAppStore } from '@/stores';
+import { useAuthStore, useAppStore, useSettingsStore } from '@/stores';
 
 function getInitials(name: string): string {
   return name
@@ -44,16 +54,22 @@ interface SettingItemProps {
   value?: string;
   rightElement?: React.ReactNode;
   onClick?: () => void;
+  delay?: number;
 }
 
-function SettingItem({ icon, label, value, rightElement, onClick }: SettingItemProps) {
+function SettingItem({ icon, label, value, rightElement, onClick, delay = 0 }: SettingItemProps) {
   const hasInteractiveRight = rightElement !== undefined;
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2, delay }}
       onClick={hasInteractiveRight ? undefined : onClick}
-      className={`flex w-full items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors text-left ${hasInteractiveRight ? '' : 'cursor-pointer'}`}
+      className={`flex w-full items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors text-left active:bg-accent/70 ${
+        hasInteractiveRight ? '' : 'cursor-pointer'
+      }`}
     >
-      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
@@ -65,21 +81,19 @@ function SettingItem({ icon, label, value, rightElement, onClick }: SettingItemP
       {rightElement || (
         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
       )}
-    </div>
+    </motion.div>
   );
 }
 
 export default function ProfileView() {
   const { currentUser } = useAuthStore();
-  const { setTab } = useAppStore();
+  const { setTab, setOverlay } = useAppStore();
+  const { theme } = useSettingsStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [bio, setBio] = useState(currentUser?.bio || '');
   const [copied, setCopied] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [lastSeenVisible, setLastSeenVisible] = useState(true);
-  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
 
   const handleCopyNumber = async () => {
     if (!currentUser) return;
@@ -94,12 +108,10 @@ export default function ProfileView() {
 
   const handleSaveName = () => {
     setIsEditingName(false);
-    // In a real app, this would update via API
   };
 
   const handleSaveBio = () => {
     setIsEditingBio(false);
-    // In a real app, this would update via API
   };
 
   const themeIcon = () => {
@@ -112,6 +124,51 @@ export default function ProfileView() {
 
   if (!currentUser) return null;
 
+  const settingsSections = [
+    {
+      title: 'Account',
+      icon: <User className="h-4 w-4 text-primary" />,
+      overlay: 'settings-account' as const,
+      description: 'Profile, Phone, Zaxo number',
+    },
+    {
+      title: 'Privacy',
+      icon: <Eye className="h-4 w-4 text-primary" />,
+      overlay: 'settings-privacy' as const,
+      description: 'Last seen, Profile photo, About',
+    },
+    {
+      title: 'Notifications',
+      icon: <Bell className="h-4 w-4 text-primary" />,
+      overlay: 'settings-notifications' as const,
+      description: 'Message, Group, Call alerts',
+    },
+    {
+      title: 'Appearance',
+      icon: <Palette className="h-4 w-4 text-primary" />,
+      overlay: 'settings-appearance' as const,
+      description: 'Theme, Wallpaper, Font size',
+    },
+    {
+      title: 'Security',
+      icon: <Shield className="h-4 w-4 text-primary" />,
+      overlay: 'settings-security' as const,
+      description: '2FA, App lock, Biometric',
+    },
+    {
+      title: 'Storage & Data',
+      icon: <HardDrive className="h-4 w-4 text-primary" />,
+      overlay: 'settings-storage' as const,
+      description: 'Auto-download, Media quality',
+    },
+    {
+      title: 'Help & Support',
+      icon: <HelpCircle className="h-4 w-4 text-primary" />,
+      overlay: 'settings-help' as const,
+      description: 'FAQ, Contact, Terms',
+    },
+  ];
+
   return (
     <div className="flex h-full flex-col bg-background">
       <ScrollArea className="flex-1">
@@ -121,12 +178,16 @@ export default function ProfileView() {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
+            className="relative"
           >
-            <Avatar className="h-24 w-24 border-4 border-primary/20">
-              <AvatarFallback className="bg-primary/10 text-primary text-3xl font-bold">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-primary/20">
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl sm:text-3xl font-bold">
                 {getInitials(currentUser.displayName)}
               </AvatarFallback>
             </Avatar>
+            <button className="absolute bottom-0 right-0 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary flex items-center justify-center shadow-lg">
+              <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-foreground" />
+            </button>
           </motion.div>
 
           {/* Display name (editable) */}
@@ -136,7 +197,7 @@ export default function ProfileView() {
                 <Input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="h-8 text-center text-base font-semibold w-48"
+                  className="h-8 text-center text-base font-semibold w-40 sm:w-48"
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                 />
@@ -149,7 +210,7 @@ export default function ProfileView() {
                 onClick={() => setIsEditingName(true)}
                 className="flex items-center gap-1.5 hover:text-primary transition-colors"
               >
-                <h2 className="text-xl font-bold">{displayName}</h2>
+                <h2 className="text-lg sm:text-xl font-bold">{displayName}</h2>
                 <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
@@ -204,82 +265,97 @@ export default function ProfileView() {
             )}
           </div>
 
-          {/* Quick actions */}
-          <div className="flex items-center gap-3 mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full"
-              onClick={() => setTab('calls')}
-            >
-              <Phone className="h-4 w-4 mr-1.5" />
-              Calls
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full"
+          {/* Quick stats row */}
+          <div className="flex items-center gap-4 sm:gap-6 mt-4">
+            <button
               onClick={() => setTab('chats')}
+              className="flex flex-col items-center gap-1 group"
             >
-              <MessageCircle className="h-4 w-4 mr-1.5" />
-              Chats
-            </Button>
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <MessageCircle className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Chats</span>
+            </button>
+            <button
+              onClick={() => setTab('calls')}
+              className="flex flex-col items-center gap-1 group"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Phone className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Calls</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-1 group"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Zap className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Zaxo</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-1 group"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Star className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">Starred</span>
+            </button>
           </div>
         </div>
 
         <Separator />
 
-        {/* Settings sections */}
+        {/* Settings Navigation */}
         <div className="py-2">
           <div className="px-4 py-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Privacy
+              Settings
             </span>
           </div>
 
-          <SettingItem
-            icon={<Eye className="h-4 w-4 text-primary" />}
-            label="Last seen"
-            value={lastSeenVisible ? 'Everyone' : 'Nobody'}
-            rightElement={
-              <Switch
-                checked={lastSeenVisible}
-                onCheckedChange={setLastSeenVisible}
-              />
-            }
-          />
-
-          <SettingItem
-            icon={<Shield className="h-4 w-4 text-primary" />}
-            label="Privacy"
-            value="Profile photo, About, Groups"
-            onClick={() => {}}
-          />
+          {/* Full Settings Page Link */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOverlay('settings')}
+            className="flex items-center gap-3 px-4 py-3.5 hover:bg-accent/50 transition-colors cursor-pointer active:bg-accent/70 mx-2 rounded-xl bg-primary/5"
+          >
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+              <Settings className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-semibold">All Settings</span>
+              <p className="text-xs text-muted-foreground">View all settings in one place</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </motion.div>
         </div>
 
         <Separator />
 
+        {/* Individual Settings Sections */}
         <div className="py-2">
-          <div className="px-4 py-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Notifications
-            </span>
-          </div>
-
-          <SettingItem
-            icon={<Bell className="h-4 w-4 text-primary" />}
-            label="Notifications"
-            value="Message, Group, Call notifications"
-            onClick={() => {}}
-          />
+          {settingsSections.map((section, i) => (
+            <SettingItem
+              key={section.title}
+              icon={section.icon}
+              label={section.title}
+              value={section.description}
+              onClick={() => setOverlay(section.overlay)}
+              delay={i * 0.05}
+            />
+          ))}
         </div>
 
         <Separator />
 
+        {/* Quick toggles */}
         <div className="py-2">
           <div className="px-4 py-2">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Appearance
+              Quick Toggles
             </span>
           </div>
 
@@ -287,80 +363,29 @@ export default function ProfileView() {
             icon={themeIcon()}
             label="Theme"
             value={theme.charAt(0).toUpperCase() + theme.slice(1)}
-            rightElement={
-              <div className="flex items-center gap-1 bg-muted rounded-full p-0.5">
-                {(['light', 'dark', 'system'] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTheme(t)}
-                    className={`p-1.5 rounded-full transition-all ${
-                      theme === t ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {t === 'light' ? <Sun className="h-3.5 w-3.5" /> : t === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Monitor className="h-3.5 w-3.5" />}
-                  </button>
-                ))}
-              </div>
-            }
+            onClick={() => setOverlay('settings-appearance')}
+          />
+
+          <SettingItem
+            icon={<Fingerprint className="h-4 w-4 text-primary" />}
+            label="App Lock"
+            value="Set up app lock"
+            onClick={() => setOverlay('settings-security')}
           />
         </div>
 
         <Separator />
 
-        <div className="py-2">
-          <div className="px-4 py-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Security
-            </span>
+        {/* App version & info */}
+        <div className="px-4 py-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center">
+              <Zap className="h-3.5 w-3.5 text-primary-foreground" />
+            </div>
+            <span className="text-sm font-semibold text-foreground">Zaxo Messenger</span>
           </div>
-
-          <SettingItem
-            icon={<Lock className="h-4 w-4 text-primary" />}
-            label="Two-Factor Authentication"
-            value={twoFAEnabled ? 'Enabled' : 'Disabled'}
-            rightElement={
-              <Switch
-                checked={twoFAEnabled}
-                onCheckedChange={setTwoFAEnabled}
-              />
-            }
-          />
-
-          <SettingItem
-            icon={<Key className="h-4 w-4 text-primary" />}
-            label="Security"
-            value="Active sessions, Linked devices"
-            onClick={() => {}}
-          />
-        </div>
-
-        <Separator />
-
-        <div className="py-2">
-          <div className="px-4 py-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Account
-            </span>
-          </div>
-
-          <SettingItem
-            icon={<User className="h-4 w-4 text-primary" />}
-            label="Account"
-            value="Profile, Phone number, Zaxo number"
-            onClick={() => {}}
-          />
-
-          <SettingItem
-            icon={<Settings className="h-4 w-4 text-primary" />}
-            label="Settings"
-            value="All settings"
-            onClick={() => {}}
-          />
-        </div>
-
-        {/* App version */}
-        <div className="px-4 py-4 text-center">
-          <p className="text-xs text-muted-foreground">Zaxo Messenger v1.0.0</p>
+          <p className="text-xs text-muted-foreground">Version 1.0.0 (Build 2025.06)</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Made with 💚 by the Zaxo Team</p>
         </div>
       </ScrollArea>
     </div>

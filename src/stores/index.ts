@@ -9,7 +9,7 @@ interface AppState {
   currentApp: AppView;
   currentTab: UserTab | AdminTab;
   sidebarOpen: boolean;
-  overlay: 'none' | 'contacts' | 'new-group' | 'new-broadcast' | 'camera' | 'media-gallery' | 'sticker-picker' | 'link-preview' | 'location-share' | 'contact-share' | 'poll-create' | 'chat-wallpaper' | 'app-lock' | 'e2e-info' | 'message-search' | 'voice-recorder';
+  overlay: 'none' | 'contacts' | 'new-group' | 'new-broadcast' | 'camera' | 'media-gallery' | 'sticker-picker' | 'link-preview' | 'location-share' | 'contact-share' | 'poll-create' | 'chat-wallpaper' | 'app-lock' | 'e2e-info' | 'message-search' | 'voice-recorder' | 'settings' | 'settings-privacy' | 'settings-notifications' | 'settings-appearance' | 'settings-security' | 'settings-account' | 'settings-storage' | 'settings-help';
   setApp: (app: AppView) => void;
   setTab: (tab: UserTab | AdminTab) => void;
   toggleSidebar: () => void;
@@ -79,6 +79,124 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!stored || pin === stored) set({ isAppLocked: false });
   },
   setPinCode: (pin) => set({ pinCode: pin }),
+}));
+
+// ==================== Settings Store ====================
+interface SettingsState {
+  // Privacy
+  lastSeenVisibility: 'everyone' | 'contacts' | 'nobody';
+  profilePhotoVisibility: 'everyone' | 'contacts' | 'nobody';
+  aboutVisibility: 'everyone' | 'contacts' | 'nobody';
+  readReceipts: boolean;
+  typingIndicators: boolean;
+  groupAddPermission: 'everyone' | 'contacts' | 'nobody';
+  blockedContacts: string[];
+
+  // Notifications
+  messageNotifications: boolean;
+  groupNotifications: boolean;
+  callNotifications: boolean;
+  notificationTone: string;
+  notificationVibrate: boolean;
+  notificationPreview: boolean;
+  reactionNotifications: boolean;
+
+  // Appearance
+  theme: 'light' | 'dark' | 'system';
+  fontSize: 'small' | 'medium' | 'large';
+  chatWallpaper: string;
+  chatBubbleStyle: 'rounded' | 'classic';
+  enterToSend: boolean;
+
+  // Security
+  twoFactorAuth: boolean;
+  appLock: boolean;
+  appLockTimeout: 'immediately' | '1min' | '5min' | '15min' | '30min';
+  biometricUnlock: boolean;
+  activeSessions: { id: string; device: string; location: string; lastActive: string }[];
+  linkedDevices: { id: string; name: string; lastActive: string }[];
+
+  // Storage
+  autoDownloadPhotos: boolean;
+  autoDownloadAudio: boolean;
+  autoDownloadVideo: boolean;
+  autoDownloadDocuments: boolean;
+  lowDataMode: boolean;
+  mediaUploadQuality: 'auto' | 'best' | 'data-saver';
+
+  // Account
+  profilePhoto: string | null;
+  displayName: string;
+  about: string;
+  phoneNumber: string;
+  zaxoNumber: string;
+
+  // Setters
+  updateSetting: <K extends keyof Omit<SettingsState, 'updateSetting' | 'updateSettings' | 'resetSettings'>>(key: K, value: SettingsState[K]) => void;
+  updateSettings: (updates: Partial<Omit<SettingsState, 'updateSetting' | 'updateSettings' | 'resetSettings'>>) => void;
+  resetSettings: () => void;
+}
+
+const defaultSettings: Omit<SettingsState, 'updateSetting' | 'updateSettings' | 'resetSettings'> = {
+  // Privacy
+  lastSeenVisibility: 'everyone',
+  profilePhotoVisibility: 'everyone',
+  aboutVisibility: 'everyone',
+  readReceipts: true,
+  typingIndicators: true,
+  groupAddPermission: 'everyone',
+  blockedContacts: [],
+
+  // Notifications
+  messageNotifications: true,
+  groupNotifications: true,
+  callNotifications: true,
+  notificationTone: 'Default',
+  notificationVibrate: true,
+  notificationPreview: true,
+  reactionNotifications: true,
+
+  // Appearance
+  theme: 'system',
+  fontSize: 'medium',
+  chatWallpaper: 'Default',
+  chatBubbleStyle: 'rounded',
+  enterToSend: true,
+
+  // Security
+  twoFactorAuth: false,
+  appLock: false,
+  appLockTimeout: 'immediately',
+  biometricUnlock: false,
+  activeSessions: [
+    { id: '1', device: 'iPhone 15 Pro', location: 'San Francisco, CA', lastActive: 'Now' },
+    { id: '2', device: 'Chrome · macOS', location: 'San Francisco, CA', lastActive: '2 hours ago' },
+  ],
+  linkedDevices: [
+    { id: '1', name: 'MacBook Pro', lastActive: 'Active now' },
+  ],
+
+  // Storage
+  autoDownloadPhotos: true,
+  autoDownloadAudio: true,
+  autoDownloadVideo: false,
+  autoDownloadDocuments: false,
+  lowDataMode: false,
+  mediaUploadQuality: 'auto',
+
+  // Account
+  profilePhoto: null,
+  displayName: 'Alex Morgan',
+  about: 'Hey there! I am using Zaxo',
+  phoneNumber: '+1-555-0101',
+  zaxoNumber: '482-719-356',
+};
+
+export const useSettingsStore = create<SettingsState>((set) => ({
+  ...defaultSettings,
+  updateSetting: (key, value) => set({ [key]: value } as Partial<SettingsState>),
+  updateSettings: (updates) => set(updates as Partial<SettingsState>),
+  resetSettings: () => set(defaultSettings),
 }));
 
 // ==================== Chat Store ====================

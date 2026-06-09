@@ -151,88 +151,88 @@ function CallItem({ call, isCurrentUserCaller, onCallBack }: CallItemProps) {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      className="group flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors relative"
+      className="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-accent/50 transition-colors relative"
     >
-      <Avatar className="h-11 w-11 shrink-0">
+      <Avatar className="h-9 w-9 sm:h-11 sm:w-11 shrink-0">
         <AvatarFallback
-          className={`font-semibold text-sm ${
+          className={`font-semibold text-xs sm:text-sm ${
             isGroupCall ? 'bg-violet-500/10 text-violet-500' :
             isMissed ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
           }`}
         >
-          {isGroupCall ? <Users className="h-4 w-4" /> : getInitials(displayName)}
+          {isGroupCall ? <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : getInitials(displayName)}
         </AvatarFallback>
       </Avatar>
 
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <span className={`text-sm font-medium truncate ${isMissed ? 'text-destructive' : ''}`}>
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          <span className={`text-xs sm:text-sm font-medium truncate ${isMissed ? 'text-destructive' : ''}`}>
             {displayName}
           </span>
           {isGroupCall && (
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-violet-500/10 text-violet-500">
+            <Badge variant="secondary" className="text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0 bg-violet-500/10 text-violet-500">
               Group
             </Badge>
           )}
           {isVideo && (
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-blue-500/10 text-blue-500">
+            <Badge variant="secondary" className="text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0 bg-blue-500/10 text-blue-500">
               HD
             </Badge>
           )}
           {call.wasRecorded && (
-            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-red-500/10 text-red-500">
+            <Badge variant="secondary" className="text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0 bg-red-500/10 text-red-500">
               REC
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-1.5 mt-0.5">
+        <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
           {isOutgoing ? (
-            <ArrowUpRight className={`h-3 w-3 ${isMissed ? 'text-destructive' : 'text-primary'}`} />
+            <ArrowUpRight className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${isMissed ? 'text-destructive' : 'text-primary'}`} />
           ) : (
-            <ArrowDownLeft className={`h-3 w-3 ${isMissed ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <ArrowDownLeft className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${isMissed ? 'text-destructive' : 'text-muted-foreground'}`} />
           )}
           {isVideo ? (
-            <Video className="h-3 w-3 text-muted-foreground" />
+            <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
           ) : (
-            <Phone className="h-3 w-3 text-muted-foreground" />
+            <Phone className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-muted-foreground" />
           )}
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[10px] sm:text-xs text-muted-foreground">
             {isMissed ? 'Missed' : isOutgoing ? 'Outgoing' : 'Incoming'}
             {call.duration > 0 && ` · ${formatDuration(call.duration)}`}
           </span>
           {call.callQuality && (
-            <span className={`text-[9px] ${call.callQuality === 'excellent' ? 'text-emerald-500' : call.callQuality === 'good' ? 'text-blue-500' : 'text-amber-500'}`}>
+            <span className={`text-[8px] sm:text-[9px] hidden sm:inline ${call.callQuality === 'excellent' ? 'text-emerald-500' : call.callQuality === 'good' ? 'text-blue-500' : 'text-amber-500'}`}>
               · {call.callQuality}
             </span>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
-        <span className="text-xs text-muted-foreground mr-1">{call.timestamp}</span>
+      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
+        <span className="text-[10px] sm:text-xs text-muted-foreground mr-0.5 sm:mr-1 hidden sm:inline">{call.timestamp}</span>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-full text-primary hover:bg-primary/10"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full text-primary hover:bg-primary/10"
           onClick={() => onCallBack(call, 'audio')}
         >
-          <PhoneCall className="h-4 w-4" />
+          <PhoneCall className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-full text-primary hover:bg-primary/10"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full text-primary hover:bg-primary/10"
           onClick={() => onCallBack(call, 'video')}
         >
-          <Video className="h-4 w-4" />
+          <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+          className="h-6 w-6 sm:h-7 sm:w-7 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={() => setShowActions(!showActions)}
         >
-          <MoreVertical className="h-3.5 w-3.5" />
+          <MoreVertical className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
         </Button>
       </div>
 
@@ -408,36 +408,36 @@ export default function CallHistory() {
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="px-4 pt-4 pb-2">
+      <div className="px-3 sm:px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold">Calls</h1>
+          <h1 className="text-lg sm:text-xl font-bold">Calls</h1>
           <Button
             onClick={() => setShowNewCall(true)}
-            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-4 h-9"
+            className="gap-1.5 sm:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-3 sm:px-4 h-8 sm:h-9 text-xs sm:text-sm"
           >
             <div className="flash-glow relative">
-              <Zap className="h-4 w-4" />
-              <Sparkles className="h-2.5 w-2.5 text-primary-foreground/60 absolute -top-1 -right-1 lightning-flash" />
+              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-primary-foreground/60 absolute -top-1 -right-1 lightning-flash" />
             </div>
             New Call
           </Button>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex gap-1 sm:gap-1.5 overflow-x-auto pb-1 scrollbar-none">
           {filterButtons.map((btn) => {
             const Icon = btn.icon;
             return (
               <button
                 key={btn.id}
                 onClick={() => setFilterType(btn.id)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1 sm:gap-1.5 rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium whitespace-nowrap transition-colors ${
                   filterType === btn.id
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted/50 text-muted-foreground hover:bg-accent'
                 }`}
               >
-                <Icon className="h-3 w-3" />
+                <Icon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 {btn.label}
               </button>
             );
@@ -445,22 +445,22 @@ export default function CallHistory() {
         </div>
 
         {/* Stats bar */}
-        <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+        <div className="flex items-center gap-3 sm:gap-4 mt-2 text-[9px] sm:text-[10px] text-muted-foreground overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1 shrink-0">
+            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             {callHistory.length} total
           </div>
-          <div className="flex items-center gap-1">
-            <PhoneOff className="h-3 w-3" />
+          <div className="flex items-center gap-1 shrink-0">
+            <PhoneOff className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             {callHistory.filter((c) => c.status === 'missed').length} missed
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0 hidden sm:flex">
             <Wifi className="h-3 w-3" />
             HD Quality
           </div>
-          <div className="flex items-center gap-1">
-            <Shield className="h-3 w-3 text-emerald-500" />
-            E2E Encrypted
+          <div className="flex items-center gap-1 shrink-0">
+            <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-emerald-500" />
+            E2E
           </div>
         </div>
       </div>

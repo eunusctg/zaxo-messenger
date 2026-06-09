@@ -217,7 +217,7 @@ export default function CallScreen() {
             </div>
             {/* Self-view PIP */}
             <motion.div 
-              className="absolute top-4 right-4 h-36 w-28 rounded-xl bg-zinc-800 border-2 border-white/10 overflow-hidden flex items-center justify-center cursor-move"
+              className="absolute top-4 right-4 h-28 w-20 sm:h-36 sm:w-28 rounded-xl bg-zinc-800 border-2 border-white/10 overflow-hidden flex items-center justify-center cursor-move"
               drag
               dragConstraints={{ top: 0, left: 0, right: 100, bottom: 200 }}
               dragElastic={0.1}
@@ -247,57 +247,57 @@ export default function CallScreen() {
         )}
 
         {/* Top status bar */}
-        <div className="absolute top-0 left-0 right-0 z-30 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        <div className="absolute top-0 left-0 right-0 z-30 p-2 sm:p-4">
+          <div className="flex items-center justify-between flex-wrap gap-1">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {activeCall.e2eEncrypted && (
-                <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px] px-2 py-0">
-                  <ShieldCheck className="h-3 w-3 mr-1" />
+                <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0">
+                  <ShieldCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                   Encrypted
                 </Badge>
               )}
               <CallQualityBadge quality={activeCall.callQuality} />
               <NetworkStrength strength={activeCall.networkStrength} />
               {isConnecting && (
-                <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px] px-2 py-0">
-                  <CircleDot className="h-2.5 w-2.5 mr-1 animate-spin" />
+                <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0">
+                  <CircleDot className="h-2.5 w-2.5 mr-0.5 sm:mr-1 animate-spin" />
                   Connecting...
                 </Badge>
               )}
               {isReconnecting && (
-                <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[10px] px-2 py-0">
-                  <Wifi className="h-2.5 w-2.5 mr-1" />
+                <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0">
+                  <Wifi className="h-2.5 w-2.5 mr-0.5 sm:mr-1" />
                   Reconnecting...
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {activeCall.isRecording && (
-                <div className="flex items-center gap-1 bg-red-500/20 rounded-full px-2.5 py-1 rec-blink">
-                  <CircleDot className="h-3 w-3 text-red-400" />
-                  <span className="text-[10px] text-red-400 font-medium">REC</span>
+                <div className="flex items-center gap-1 bg-red-500/20 rounded-full px-2 sm:px-2.5 py-1 rec-blink">
+                  <CircleDot className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-400" />
+                  <span className="text-[9px] sm:text-[10px] text-red-400 font-medium">REC</span>
                 </div>
               )}
               {activeCall.isNoiseCancellation && (
-                <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px] px-2 py-0">
-                  <Radio className="h-3 w-3 mr-1" />
+                <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0 hidden sm:flex">
+                  <Radio className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                   Noise Off
                 </Badge>
               )}
               {activeCall.isLowDataMode && (
-                <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[10px] px-2 py-0">
-                  <Signal className="h-3 w-3 mr-1" />
+                <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0 hidden sm:flex">
+                  <Signal className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                   Low Data
                 </Badge>
               )}
               {activeCall.isLiveCaptioning && (
-                <Badge className="bg-purple-500/20 text-purple-400 border-0 text-[10px] px-2 py-0">
-                  <Subtitles className="h-3 w-3 mr-1" />
+                <Badge className="bg-purple-500/20 text-purple-400 border-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0 hidden sm:flex">
+                  <Subtitles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                   Captions
                 </Badge>
               )}
               {activeCall.isBluetoothConnected && (
-                <Bluetooth className="h-4 w-4 text-blue-400" />
+                <Bluetooth className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-400" />
               )}
             </div>
           </div>
@@ -362,20 +362,20 @@ export default function CallScreen() {
           </div>
         ) : (
           /* 1-on-1 caller info */
-          <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
             <motion.div
               animate={activeCall.status === 'ringing' ? { scale: [1, 1.05, 1] } : { scale: 1 }}
               transition={activeCall.status === 'ringing' ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
             >
               <div className={activeCall.status === 'ringing' ? 'call-pulse rounded-full' : ''}>
-                <Avatar className="h-28 w-28 border-4 border-white/20">
-                  <AvatarFallback className="bg-primary/20 text-primary text-3xl font-bold">
-                    {activeCall.isGroup ? <Users className="h-10 w-10" /> : getInitials(participant?.name || 'Unknown')}
+                <Avatar className="h-20 w-20 sm:h-28 sm:w-28 border-4 border-white/20">
+                  <AvatarFallback className="bg-primary/20 text-primary text-2xl sm:text-3xl font-bold">
+                    {activeCall.isGroup ? <Users className="h-8 w-8 sm:h-10 sm:w-10" /> : getInitials(participant?.name || 'Unknown')}
                   </AvatarFallback>
                 </Avatar>
               </div>
             </motion.div>
-            <h2 className="text-2xl font-bold text-white">{participantName}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white">{participantName}</h2>
             {activeCall.status === 'ringing' ? (
               <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-white/60 text-sm">
                 {isIncoming ? 'Incoming call...' : 'Ringing...'}
@@ -416,68 +416,68 @@ export default function CallScreen() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-16 flex items-center gap-8 z-20"
+            className="absolute bottom-12 sm:bottom-16 flex items-center gap-6 sm:gap-8 z-20 safe-bottom"
           >
             <div className="flex flex-col items-center gap-2">
-              <Button onClick={handleDeclineCall} className="h-16 w-16 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
-                <PhoneOff className="h-7 w-7" />
+              <Button onClick={handleDeclineCall} className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
+                <PhoneOff className="h-6 w-6 sm:h-7 sm:w-7" />
               </Button>
-              <span className="text-xs text-white/60">Decline</span>
+              <span className="text-[10px] sm:text-xs text-white/60">Decline</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <Button onClick={handleAcceptCall} className="h-16 w-16 rounded-full bg-emerald-500 hover:bg-emerald-500/90 text-white shadow-lg shadow-emerald-500/30" size="icon">
-                <PhoneCall className="h-7 w-7" />
+              <Button onClick={handleAcceptCall} className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-emerald-500 hover:bg-emerald-500/90 text-white shadow-lg shadow-emerald-500/30" size="icon">
+                <PhoneCall className="h-6 w-6 sm:h-7 sm:w-7" />
               </Button>
-              <span className="text-xs text-white/60">Accept</span>
+              <span className="text-[10px] sm:text-xs text-white/60">Accept</span>
             </div>
           </motion.div>
         ) : (
           /* Call controls */
-          <div className="absolute bottom-0 left-0 right-0 z-20 pb-6 pt-4 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 z-20 pb-4 sm:pb-6 pt-4 bg-gradient-to-t from-black/80 to-transparent safe-bottom">
             {/* Main controls row */}
-            <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-4 mb-3">
               {/* Mute */}
-              <div className="flex flex-col items-center gap-1.5">
-                <Button onClick={toggleMute} variant="ghost" className={`h-12 w-12 rounded-full ${activeCall.isMuted ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
-                  {activeCall.isMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              <div className="flex flex-col items-center gap-1 sm:gap-1.5">
+                <Button onClick={toggleMute} variant="ghost" className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full ${activeCall.isMuted ? 'bg-white text-red-500' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
+                  {activeCall.isMuted ? <MicOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <Mic className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                 </Button>
-                <span className="text-[9px] text-white/50">{activeCall.isMuted ? 'Unmute' : 'Mute'}</span>
+                <span className="text-[8px] sm:text-[9px] text-white/50">{activeCall.isMuted ? 'Unmute' : 'Mute'}</span>
               </div>
 
               {/* Speaker */}
-              <div className="flex flex-col items-center gap-1.5">
-                <Button onClick={toggleSpeaker} variant="ghost" className={`h-12 w-12 rounded-full ${activeCall.isSpeakerOn ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
-                  {activeCall.isSpeakerOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+              <div className="flex flex-col items-center gap-1 sm:gap-1.5">
+                <Button onClick={toggleSpeaker} variant="ghost" className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full ${activeCall.isSpeakerOn ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
+                  {activeCall.isSpeakerOn ? <Volume2 className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <VolumeX className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                 </Button>
-                <span className="text-[9px] text-white/50">Speaker</span>
+                <span className="text-[8px] sm:text-[9px] text-white/50">Speaker</span>
               </div>
 
               {/* Video toggle */}
               {isVideoCall && (
-                <div className="flex flex-col items-center gap-1.5">
-                  <Button onClick={toggleVideo} variant="ghost" className={`h-12 w-12 rounded-full ${activeCall.isVideoOn ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
-                    {activeCall.isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                <div className="flex flex-col items-center gap-1 sm:gap-1.5">
+                  <Button onClick={toggleVideo} variant="ghost" className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full ${activeCall.isVideoOn ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
+                    {activeCall.isVideoOn ? <Video className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <VideoOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                   </Button>
-                  <span className="text-[9px] text-white/50">Video</span>
+                  <span className="text-[8px] sm:text-[9px] text-white/50">Video</span>
                 </div>
               )}
 
               {/* Screen share */}
               {isVideoCall && (
-                <div className="flex flex-col items-center gap-1.5">
-                  <Button onClick={toggleScreenShare} variant="ghost" className={`h-12 w-12 rounded-full ${activeCall.isScreenSharing ? 'bg-white text-primary' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
-                    {activeCall.isScreenSharing ? <MonitorUp className="h-5 w-5" /> : <MonitorOff className="h-5 w-5" />}
+                <div className="flex flex-col items-center gap-1 sm:gap-1.5 hidden sm:flex">
+                  <Button onClick={toggleScreenShare} variant="ghost" className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full ${activeCall.isScreenSharing ? 'bg-white text-primary' : 'bg-white/10 text-white hover:bg-white/20'}`} size="icon">
+                    {activeCall.isScreenSharing ? <MonitorUp className="h-4.5 w-4.5 sm:h-5 sm:w-5" /> : <MonitorOff className="h-4.5 w-4.5 sm:h-5 sm:w-5" />}
                   </Button>
-                  <span className="text-[9px] text-white/50">Share</span>
+                  <span className="text-[8px] sm:text-[9px] text-white/50">Share</span>
                 </div>
               )}
 
               {/* End call */}
-              <div className="flex flex-col items-center gap-1.5">
-                <Button onClick={endCall} className="h-14 w-14 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
-                  <PhoneOff className="h-6 w-6" />
+              <div className="flex flex-col items-center gap-1 sm:gap-1.5">
+                <Button onClick={endCall} className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
+                  <PhoneOff className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
-                <span className="text-[9px] text-white/50">End</span>
+                <span className="text-[8px] sm:text-[9px] text-white/50">End</span>
               </div>
             </div>
 
@@ -747,7 +747,7 @@ export default function CallScreen() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute bottom-32 right-4 z-30 w-72 bg-zinc-900/95 backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden flex flex-col max-h-80"
+              className="absolute bottom-28 sm:bottom-32 right-2 sm:right-4 z-30 w-64 sm:w-72 bg-zinc-900/95 backdrop-blur-lg rounded-2xl border border-white/10 overflow-hidden flex flex-col max-h-72 sm:max-h-80"
             >
               <div className="flex items-center justify-between p-3 border-b border-white/10">
                 <h3 className="text-sm font-semibold text-white">Call Chat</h3>

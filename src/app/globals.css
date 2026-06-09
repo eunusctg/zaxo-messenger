@@ -131,9 +131,21 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Smooth scrolling globally */
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-/* Custom scrollbar */
+/* ========== Safe Area Support ========== */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ========== Custom Scrollbar ========== */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -149,7 +161,27 @@
   background: oklch(0.7 0.02 162 / 50%);
 }
 
-/* Chat bubble styles */
+/* Better scrollbar for mobile - thin and unobtrusive */
+@media (max-width: 640px) {
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.7 0.02 162 / 20%);
+  }
+}
+
+/* Hide scrollbar utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ========== Chat Bubble Styles ========== */
 .chat-bubble-sent {
   border-radius: 18px 18px 4px 18px;
 }
@@ -157,7 +189,7 @@
   border-radius: 18px 18px 18px 4px;
 }
 
-/* Typing indicator animation */
+/* ========== Typing Indicator Animation ========== */
 @keyframes typingDot {
   0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
   30% { opacity: 1; transform: scale(1); }
@@ -166,7 +198,7 @@
 .typing-dot:nth-child(2) { animation: typingDot 1.4s infinite 0.2s; }
 .typing-dot:nth-child(3) { animation: typingDot 1.4s infinite 0.4s; }
 
-/* Call pulse animation */
+/* ========== Call Pulse Animation ========== */
 @keyframes callPulse {
   0% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 40%); }
   70% { box-shadow: 0 0 0 20px oklch(0.72 0.17 162 / 0%); }
@@ -176,7 +208,7 @@
   animation: callPulse 2s infinite;
 }
 
-/* QR scanner frame */
+/* ========== QR Scanner Frame ========== */
 @keyframes scanLine {
   0% { top: 0; }
   100% { top: 100%; }
@@ -185,7 +217,7 @@
   animation: scanLine 2s linear infinite;
 }
 
-/* Flash/Zap icon glow animation - STUNNING */
+/* ========== Flash/Zap Icon Glow Animation ========== */
 @keyframes flashGlow {
   0%, 100% {
     filter: drop-shadow(0 0 3px oklch(0.72 0.17 162 / 50%));
@@ -208,7 +240,7 @@
   animation: flashGlow 2s ease-in-out infinite;
 }
 
-/* Lightning bolt flash effect */
+/* ========== Lightning Bolt Flash Effect ========== */
 @keyframes lightningFlash {
   0% { opacity: 0; transform: scale(0.5) rotate(-15deg); }
   15% { opacity: 1; transform: scale(1.3) rotate(5deg); }
@@ -221,7 +253,7 @@
   animation: lightningFlash 3s ease-in-out infinite;
 }
 
-/* Dial button pulse ring - enhanced */
+/* ========== Dial Button Pulse Ring ========== */
 @keyframes dialPulse {
   0% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 70%); }
   50% { box-shadow: 0 0 0 6px oklch(0.72 0.17 162 / 30%), 0 0 0 12px oklch(0.72 0.17 162 / 15%); }
@@ -231,7 +263,7 @@
   animation: dialPulse 1.5s ease-out infinite;
 }
 
-/* Electric spark animation */
+/* ========== Electric Spark Animation ========== */
 @keyframes electricSpark {
   0%, 100% {
     box-shadow: 0 0 4px oklch(0.72 0.17 162 / 60%), inset 0 0 4px oklch(0.72 0.17 162 / 20%);
@@ -247,7 +279,7 @@
   animation: electricSpark 2s ease-in-out infinite;
 }
 
-/* Call screen ripple for group calls */
+/* ========== Call Screen Ripple ========== */
 @keyframes callRipple {
   0% { transform: scale(1); opacity: 0.4; }
   100% { transform: scale(2.5); opacity: 0; }
@@ -261,7 +293,7 @@
   animation: callRipple 2s ease-out infinite;
 }
 
-/* Recording indicator */
+/* ========== Recording Indicator ========== */
 @keyframes recBlink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
@@ -270,7 +302,7 @@
   animation: recBlink 1s ease-in-out infinite;
 }
 
-/* Screen share glow border */
+/* ========== Screen Share Glow Border ========== */
 @keyframes screenShareGlow {
   0%, 100% { border-color: oklch(0.72 0.17 162 / 30%); }
   50% { border-color: oklch(0.72 0.17 162 / 80%); }
@@ -280,7 +312,7 @@
   border: 2px solid oklch(0.72 0.17 162 / 30%);
 }
 
-/* Speaking indicator */
+/* ========== Speaking Indicator ========== */
 @keyframes speakingGlow {
   0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 30%); }
   50% { box-shadow: 0 0 0 4px oklch(0.72 0.17 162 / 50%); }
@@ -289,7 +321,7 @@
   animation: speakingGlow 1s ease-in-out infinite;
 }
 
-/* Dropdown menu animation */
+/* ========== Dropdown Menu Animation ========== */
 @keyframes dropdownSlide {
   0% { opacity: 0; transform: translateY(-4px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -298,8 +330,146 @@
   animation: dropdownSlide 0.15s ease-out;
 }
 
-/* Call quality indicator colors */
+/* ========== Call Quality Indicator Colors ========== */
 .call-quality-excellent { color: oklch(0.75 0.17 145); }
 .call-quality-good { color: oklch(0.72 0.17 162); }
 .call-quality-fair { color: oklch(0.78 0.14 60); }
 .call-quality-poor { color: oklch(0.577 0.245 27.325); }
+
+/* ========== Page Slide Transitions ========== */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+.slide-in-right { animation: slideInRight 0.3s ease-out; }
+.slide-out-right { animation: slideOutRight 0.3s ease-in; }
+.slide-in-left { animation: slideInLeft 0.3s ease-out; }
+.slide-out-left { animation: slideOutLeft 0.3s ease-in; }
+
+/* ========== Settings Section Reveal Animation ========== */
+@keyframes settingsReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.settings-reveal {
+  animation: settingsReveal 0.35s ease-out forwards;
+}
+
+/* ========== Toggle Switch Enhanced Animation ========== */
+@keyframes togglePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.toggle-pop {
+  animation: togglePop 0.25s ease-out;
+}
+
+/* ========== List Item Stagger Animation ========== */
+@keyframes listItemStagger {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.list-stagger > * {
+  animation: listItemStagger 0.3s ease-out both;
+}
+.list-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.list-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.list-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.list-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.list-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.list-stagger > *:nth-child(6) { animation-delay: 200ms; }
+.list-stagger > *:nth-child(7) { animation-delay: 240ms; }
+.list-stagger > *:nth-child(8) { animation-delay: 280ms; }
+.list-stagger > *:nth-child(9) { animation-delay: 320ms; }
+.list-stagger > *:nth-child(10) { animation-delay: 360ms; }
+.list-stagger > *:nth-child(n+11) { animation-delay: 400ms; }
+
+/* ========== Mobile Touch Improvements ========== */
+@media (max-width: 640px) {
+  /* Increase touch target size */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+  }
+  
+  /* Small icon buttons should still be small but have padding */
+  button[variant="ghost"][size="icon"],
+  .h-9.w-9,
+  .h-8.w-8 {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better text selection on mobile */
+  p, span, div {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in input areas */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* ========== Dynamic Viewport Height ========== */
+@supports (height: 100dvh) {
+  .h-dvh {
+    height: 100dvh;
+  }
+}
+
+/* ========== Smooth Transitions for Theme Toggle ========== */
+@media (prefers-reduced-motion: no-preference) {
+  body, .bg-background, .bg-card, .bg-muted {
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* ========== Reduced Motion Support ========== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .flash-glow,
+  .lightning-flash,
+  .dial-pulse,
+  .electric-spark,
+  .call-pulse,
+  .rec-blink,
+  .screen-share-glow,
+  .speaking-indicator,
+  .typing-dot,
+  .scanner-line {
+    animation: none !important;
+  }
+}

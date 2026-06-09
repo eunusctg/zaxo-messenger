@@ -79,7 +79,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
     switch (message.messageType) {
       case 'voice':
         return (
-          <div className="flex items-center gap-2 min-w-[180px]">
+          <div className="flex items-center gap-2 min-w-[160px] sm:min-w-[180px]">
             <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full shrink-0 ${isSent ? 'text-primary-foreground hover:bg-primary-foreground/20' : 'text-primary hover:bg-primary/20'}`}>
               <Mic className="h-4 w-4" />
             </Button>
@@ -102,7 +102,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
       case 'image':
         return (
           <div className="space-y-1">
-            <div className={`rounded-lg h-40 w-48 flex items-center justify-center ${isSent ? 'bg-primary-foreground/10' : 'bg-muted-foreground/10'}`}>
+            <div className={`rounded-lg h-32 sm:h-40 w-36 sm:w-48 flex items-center justify-center ${isSent ? 'bg-primary-foreground/10' : 'bg-muted-foreground/10'}`}>
               <Image className={`h-8 w-8 ${isSent ? 'text-primary-foreground/40' : 'text-muted-foreground/40'}`} alt="Photo" />
             </div>
             {message.content && <p className="text-sm leading-relaxed break-words">{message.content}</p>}
@@ -123,7 +123,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
       case 'location':
         return (
           <div className="space-y-1">
-            <div className={`rounded-lg h-32 w-48 flex items-center justify-center relative overflow-hidden ${isSent ? 'bg-primary-foreground/10' : 'bg-muted'}`}>
+            <div className={`rounded-lg h-28 sm:h-32 w-40 sm:w-48 flex items-center justify-center relative overflow-hidden ${isSent ? 'bg-primary-foreground/10' : 'bg-muted'}`}>
               <div className="absolute inset-0 opacity-20">
                 <div className="grid grid-cols-8 grid-rows-6 h-full w-full gap-px p-1">
                   {Array.from({ length: 48 }).map((_, i) => (
@@ -141,7 +141,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
         );
       case 'poll':
         return (
-          <div className="space-y-2 min-w-[200px]">
+          <div className="space-y-2 min-w-[180px] sm:min-w-[200px]">
             <div className="flex items-center gap-1.5">
               <BarChart3 className={`h-4 w-4 ${isSent ? 'text-primary-foreground' : 'text-primary'}`} />
               <span className="text-sm font-medium">Poll</span>
@@ -213,7 +213,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
       className={`flex ${isSent ? 'justify-end' : 'justify-start'} mb-1`}
     >
       <div
-        className={`max-w-[75%] px-3 py-2 relative group ${
+        className={`max-w-[80%] sm:max-w-[75%] px-3 py-2 relative group ${
           isDeleted ? 'bg-muted/50' :
           isSent
             ? 'bg-primary text-primary-foreground chat-bubble-sent'
@@ -284,9 +284,9 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
 
 function EmptyState() {
   return (
-    <div className="flex h-full flex-col items-center justify-center text-center p-8">
-      <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-        <svg className="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="flex h-full flex-col items-center justify-center text-center p-6 sm:p-8">
+      <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+        <svg className="h-10 w-10 sm:h-12 sm:w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       </div>
@@ -334,6 +334,19 @@ export default function ChatView({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages.length]);
+
+  // Close dial menu when clicking outside
+  useEffect(() => {
+    if (!showDialMenu) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-dial-menu]') && !target.closest('[data-dial-trigger]')) {
+        setShowDialMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showDialMenu]);
 
   const handleStartCall = (callType: 'audio' | 'video') => {
     if (!activeChat) return;
@@ -423,8 +436,9 @@ export default function ChatView({
 
   return (
     <div className="flex h-full flex-col bg-background">
-      {/* Chat Header */}
-      <div className="flex items-center gap-3 border-b px-4 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shrink-0">
+      {/* Chat Header - FIXED: proper z-index to stay above messages */}
+      <div className="relative z-30 flex items-center gap-2 sm:gap-3 border-b px-2 sm:px-4 py-2 sm:py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shrink-0">
+        {/* Back button - mobile */}
         <Button
           variant="ghost"
           size="icon"
@@ -434,12 +448,14 @@ export default function ChatView({
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+        {/* Avatar */}
+        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
             {activeChat.isGroup ? <Users className="h-4 w-4" /> : getInitials(activeChat.name)}
           </AvatarFallback>
         </Avatar>
 
+        {/* Name & status */}
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold text-sm truncate">{activeChat.name}</h2>
           <div className="flex items-center gap-1">
@@ -449,7 +465,7 @@ export default function ChatView({
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               {activeChat.isGroup
                 ? `${activeChat.members.length} members`
                 : activeChat.isTyping
@@ -459,53 +475,56 @@ export default function ChatView({
                     : 'Last seen recently'}
             </p>
             {activeChat.disappearingMessages && (
-              <span className="text-[10px] text-muted-foreground ml-1">
+              <span className="text-[10px] text-muted-foreground ml-1 shrink-0">
                 ⏱ {activeChat.disappearingDuration}h
               </span>
             )}
           </div>
         </div>
 
-        {/* Dial Button with Dropdown */}
-        <div className="flex items-center gap-1 shrink-0 relative">
+        {/* Dial Button - FIXED: clearly in the header with proper z-index */}
+        <div className="flex items-center gap-1 shrink-0" data-dial-trigger>
           <div className="relative">
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10 rounded-full relative electric-spark"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full relative electric-spark"
               onClick={() => setShowDialMenu(!showDialMenu)}
             >
               <div className="flash-glow relative">
-                <Zap className="h-5 w-5 text-primary" />
-                {/* Lightning sparkle effect */}
-                <Sparkles className="h-3 w-3 text-primary/60 absolute -top-1 -right-1 lightning-flash" />
+                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary/60 absolute -top-1 -right-1 lightning-flash" />
               </div>
             </Button>
             {/* Pulse ring */}
             <div className="absolute inset-0 rounded-full dial-pulse pointer-events-none" />
             
-            {/* Dropdown menu */}
+            {/* Dropdown menu - FIXED: z-50 to be above everything */}
             <AnimatePresence>
               {showDialMenu && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowDialMenu(false)} />
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowDialMenu(false)}
+                  />
                   <motion.div
                     initial={{ opacity: 0, y: -8, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-12 z-50 min-w-[220px] rounded-xl border border-border bg-popover p-1.5 shadow-xl"
+                    data-dial-menu
+                    className="absolute right-0 top-11 sm:top-12 z-50 min-w-[200px] sm:min-w-[220px] rounded-xl border border-border bg-popover p-1.5 shadow-xl"
                   >
                     {/* Audio Call */}
                     <button
                       onClick={() => handleStartCall('audio')}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm hover:bg-accent transition-colors"
                     >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 shrink-0">
-                        <Phone className="h-4 w-4 text-emerald-500" />
+                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-emerald-500/10 shrink-0">
+                        <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium">Audio Call</p>
+                      <div className="text-left min-w-0">
+                        <p className="font-medium text-sm">Audio Call</p>
                         <p className="text-[10px] text-muted-foreground">Voice call with E2E encryption</p>
                       </div>
                     </button>
@@ -513,28 +532,28 @@ export default function ChatView({
                     {/* Video Call */}
                     <button
                       onClick={() => handleStartCall('video')}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm hover:bg-accent transition-colors"
                     >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/10 shrink-0">
-                        <Video className="h-4 w-4 text-blue-500" />
+                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-blue-500/10 shrink-0">
+                        <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium">Video Call</p>
+                      <div className="text-left min-w-0">
+                        <p className="font-medium text-sm">Video Call</p>
                         <p className="text-[10px] text-muted-foreground">HD video with screen share</p>
                       </div>
                     </button>
 
-                    {/* Group Call - always shown */}
+                    {/* Group Call */}
                     <div className="my-1 h-px bg-border" />
                     <button
                       onClick={() => handleStartGroupCall('video')}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm hover:bg-accent transition-colors"
                     >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-500/10 shrink-0">
-                        <Users className="h-4 w-4 text-violet-500" />
+                      <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-violet-500/10 shrink-0">
+                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-violet-500" />
                       </div>
-                      <div className="text-left">
-                        <p className="font-medium">Group Call</p>
+                      <div className="text-left min-w-0">
+                        <p className="font-medium text-sm">Group Call</p>
                         <p className="text-[10px] text-muted-foreground">Call all {activeChat?.members.length || 0} members</p>
                       </div>
                     </button>
@@ -553,8 +572,8 @@ export default function ChatView({
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea className="flex-1 px-4">
+      {/* Messages - scrollable area */}
+      <ScrollArea className="flex-1 px-2 sm:px-4">
         <div className="py-4">
           <div className="flex items-center justify-center mb-4">
             <Badge variant="secondary" className="text-[10px] font-normal rounded-full px-3 py-0.5">
@@ -591,11 +610,11 @@ export default function ChatView({
         </div>
       </ScrollArea>
 
-      {/* Message Input */}
-      <div className="border-t bg-background p-3 shrink-0">
-        <div className="flex items-end gap-2">
+      {/* Message Input - FIXED: safe area padding for mobile */}
+      <div className="border-t bg-background p-2 sm:p-3 shrink-0 safe-bottom">
+        <div className="flex items-end gap-1.5 sm:gap-2">
           <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full">
-            <Paperclip className="h-5 w-5 text-muted-foreground" />
+            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </Button>
 
           <div className="flex-1 relative">
@@ -610,7 +629,7 @@ export default function ChatView({
                 }
               }}
               placeholder="Type a message..."
-              className="w-full rounded-2xl bg-muted/50 px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+              className="w-full rounded-2xl bg-muted/50 px-3 sm:px-4 py-2 sm:py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
             />
           </div>
 
@@ -620,7 +639,7 @@ export default function ChatView({
             className="h-9 w-9 shrink-0 rounded-full"
             onClick={() => setShowEmojiHint(!showEmojiHint)}
           >
-            <Smile className="h-5 w-5 text-muted-foreground" />
+            <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           </Button>
 
           {inputText.trim() ? (
@@ -635,7 +654,7 @@ export default function ChatView({
             </motion.div>
           ) : (
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-full">
-              <Mic className="h-5 w-5 text-muted-foreground" />
+              <Mic className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             </Button>
           )}
         </div>

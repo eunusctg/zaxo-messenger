@@ -70,7 +70,7 @@ function AppSwitcher() {
     <div className="flex items-center gap-1 rounded-full bg-muted p-1">
       <button
         onClick={() => setApp('user')}
-        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+        className={`rounded-full px-3 sm:px-4 py-1.5 text-sm font-medium transition-all ${
           currentApp === 'user'
             ? 'bg-primary text-primary-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground'
@@ -80,7 +80,7 @@ function AppSwitcher() {
       </button>
       <button
         onClick={() => setApp('admin')}
-        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+        className={`rounded-full px-3 sm:px-4 py-1.5 text-sm font-medium transition-all ${
           currentApp === 'admin'
             ? 'bg-primary text-primary-foreground shadow-sm'
             : 'text-muted-foreground hover:text-foreground'
@@ -90,6 +90,13 @@ function AppSwitcher() {
       </button>
     </div>
   );
+}
+
+// ========== Settings overlay helpers ==========
+function getSettingsSection(overlay: string): string | null {
+  if (overlay === 'settings') return 'all';
+  if (overlay.startsWith('settings-')) return overlay.replace('settings-', '');
+  return null;
 }
 
 // ========== User App ==========
@@ -125,7 +132,19 @@ function UserApp() {
   const isViewingChat = currentTab === 'chats' && activeChat !== null;
   const showBottomNav = !(currentTab === 'chats' && activeChat !== null) && overlay === 'none';
 
+  const settingsSection = getSettingsSection(overlay);
+
   const renderContent = () => {
+    // Settings overlays - full page with back navigation
+    if (settingsSection) {
+      return (
+        <SettingsView
+          section={settingsSection}
+          onBack={() => setOverlay('none')}
+        />
+      );
+    }
+
     // Overlay screens take priority
     switch (overlay) {
       case 'contacts':
@@ -179,12 +198,12 @@ function UserApp() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-background overflow-hidden">
       {/* App Lock Screen */}
       {isAppLocked && <AppLockScreen />}
 
       {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-3 sm:px-4 py-2 shrink-0 z-10 bg-background">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <MessageCircle className="h-4 w-4 text-primary-foreground" />
@@ -194,8 +213,8 @@ function UserApp() {
         <AppSwitcher />
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Main content - scrollable area */}
+      <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentTab + overlay}
@@ -203,7 +222,7 @@ function UserApp() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="min-h-full"
+            className="absolute inset-0"
           >
             {renderContent()}
           </motion.div>
@@ -212,7 +231,7 @@ function UserApp() {
 
       {/* Bottom navigation */}
       {showBottomNav && (
-        <div className="flex items-center justify-around border-t border-border bg-background px-1 py-1 md:py-2">
+        <div className="flex items-center justify-around border-t border-border bg-background px-1 py-1 md:py-2 safe-bottom shrink-0">
           {userNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -223,7 +242,7 @@ function UserApp() {
                   setTab(item.id);
                   if (item.id !== 'chats') setActiveChat(null);
                 }}
-                className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-all ${
+                className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-all min-w-[56px] ${
                   isActive
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -263,8 +282,6 @@ function UserApp() {
       {/* Call Screen Overlay */}
       {activeCall && <CallScreen />}
 
-
-
       {/* Media Gallery Overlay */}
       {mediaGalleryMsg && (
         <MediaGallery
@@ -272,8 +289,6 @@ function UserApp() {
           onClose={() => setMediaGalleryMsg(null)}
         />
       )}
-
-      {/* Sticker/Emoji Picker (rendered inside ChatView via portal or state) */}
     </div>
   );
 }
@@ -298,10 +313,10 @@ function AdminApp() {
   };
 
   return (
-    <div className="flex h-full bg-background">
+    <div className="flex h-full bg-background overflow-hidden">
       {/* Sidebar */}
       <aside
-        className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 ${
+        className={`hidden md:flex flex-col border-r border-border bg-card transition-all duration-200 shrink-0 ${
           sidebarCollapsed ? 'w-16' : 'w-56'
         }`}
       >
@@ -319,7 +334,7 @@ function AdminApp() {
             </motion.span>
           )}
         </div>
-        <nav className="flex-1 space-y-1 p-2">
+        <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
           {adminNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -357,8 +372,8 @@ function AdminApp() {
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+        <header className="flex items-center justify-between border-b border-border bg-card px-3 sm:px-4 py-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="md:hidden">
               <AdminMobileNav />
@@ -407,7 +422,7 @@ function AdminMobileNav() {
             initial={{ x: -280 }}
             animate={{ x: 0 }}
             exit={{ x: -280 }}
-            className="relative flex w-64 flex-col bg-card shadow-xl"
+            className="relative flex w-64 max-w-[80vw] flex-col bg-card shadow-xl"
           >
             <div className="flex items-center gap-2 border-b border-border px-4 py-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -415,7 +430,7 @@ function AdminMobileNav() {
               </div>
               <span className="text-lg font-bold">Zaxo Admin</span>
             </div>
-            <nav className="flex-1 space-y-1 p-2">
+            <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
               {adminNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
@@ -445,7 +460,7 @@ export default function ZaxoApp() {
   const { currentApp } = useAppStore();
 
   return (
-    <div className="h-screen w-screen overflow-hidden">
+    <div className="h-dvh w-screen overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentApp}
