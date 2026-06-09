@@ -13,11 +13,34 @@ export async function GET(request: Request) {
         OR: [
           { displayName: { contains: search } },
           { zaxoNumber: { contains: search } },
+          { email: { contains: search } },
         ],
       } : undefined,
       take: limit,
       skip: offset,
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        zaxoNumber: true,
+        displayName: true,
+        phoneNumber: true,
+        profilePicture: true,
+        bio: true,
+        status: true,
+        lastSeen: true,
+        isOnline: true,
+        lastSeenVisible: true,
+        profileVisible: true,
+        groupAdd: true,
+        theme: true,
+        twoFactorEnabled: true,
+        isSuspended: true,
+        isBanned: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     const total = await db.user.count();
@@ -25,25 +48,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ users, total });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { displayName, phoneNumber, zaxoNumber, bio } = body;
-
-    const user = await db.user.create({
-      data: {
-        displayName,
-        phoneNumber,
-        zaxoNumber,
-        bio: bio || '',
-      },
-    });
-
-    return NextResponse.json({ user }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
 }

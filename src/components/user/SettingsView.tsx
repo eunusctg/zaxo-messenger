@@ -48,6 +48,8 @@ import {
   CircleDot,
   Settings,
   Sparkles,
+  Mail,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -817,7 +819,7 @@ function StorageSettings({ onBack }: { onBack: () => void }) {
 
 // ========== Account Settings ==========
 function AccountSettings({ onBack }: { onBack: () => void }) {
-  const { currentUser } = useAuthStore();
+  const { currentUser, logout } = useAuthStore();
   const { displayName, about, phoneNumber, zaxoNumber, updateSetting } = useSettingsStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
@@ -889,6 +891,12 @@ function AccountSettings({ onBack }: { onBack: () => void }) {
         <Separator />
 
         <SettingSection title="Phone & Zaxo">
+          <SettingRow
+            icon={<Mail className="h-5 w-5 text-primary" />}
+            label="Email"
+            subtitle={currentUser?.email || 'Not set'}
+            rightElement={<Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+          />
           <SettingRow
             icon={<Phone className="h-5 w-5 text-primary" />}
             label="Phone number"

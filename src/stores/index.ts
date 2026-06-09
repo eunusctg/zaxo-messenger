@@ -30,16 +30,23 @@ export const useAppStore = create<AppState>((set) => ({
 }));
 
 // ==================== Auth Store ====================
-const adminCredentials = { email: 'eunus527@gmail.com', password: 'RAna22@@' };
+
+// LocalStorage keys for auth persistence
+const AUTH_STORAGE_KEY = 'zaxo_auth';
+const TOKEN_STORAGE_KEY = 'zaxo_token';
 
 interface AuthState {
   isAuthenticated: boolean;
   isAdmin: boolean;
   currentUser: UserPayload | null;
+  token: string | null;
   isAppLocked: boolean;
   pinCode: string | null;
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: RegisterData) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  restoreSession: () => Promise<void>;
   lockApp: () => void;
   unlockApp: (pin: string) => void;
   setPinCode: (pin: string) => void;
@@ -47,6 +54,7 @@ interface AuthState {
 
 export interface UserPayload {
   id: string;
+  email: string;
   zaxoNumber: string;
   displayName: string;
   profilePicture: string | null;
@@ -55,6 +63,57 @@ export interface UserPayload {
   isOnline: boolean;
   phone?: string;
   about?: string;
+  role: string;
+  phoneNumber: string;
+  createdAt: string;
+}
+
+export interface RegisterData {
+  displayName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+}
+
+// Helper: save auth state to localStorage
+function saveAuthToStorage(user: UserPayload, token: string, isAdmin: boolean) {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user, isAdmin }));
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } catch {
+      // localStorage not available
+    }
+  }
+}
+
+// Helper: clear auth state from localStorage
+function clearAuthStorage() {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    } catch {
+      // localStorage not available
+    }
+  }
+}
+
+// Helper: load auth state from localStorage
+function loadAuthFromStorage(): { user: UserPayload; token: string; isAdmin: boolean } | null {
+  if (typeof window !== 'undefined') {
+    try {
+      const authData = localStorage.getItem(AUTH_STORAGE_KEY);
+      const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (authData && token) {
+        const parsed = JSON.parse(authData);
+        return { user: parsed.user, token, isAdmin: parsed.isAdmin };
+      }
+    } catch {
+      // localStorage not available or corrupted
+    }
+  }
+  return null;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -63,28 +122,191 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAppLocked: false,
   pinCode: null,
   currentUser: null,
-  login: (email: string, password: string) => {
-    if (email === adminCredentials.email && password === adminCredentials.password) {
+  token: null,
+  isLoading: false,
+
+  login: async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Login failed' };
+      }
+
+      const userPayload: UserPayload = {
+        id: data.user.id,
+        email: data.user.email,
+        zaxoNumber: data.user.zaxoNumber,
+        displayName: data.user.displayName,
+        profilePicture: data.user.profilePicture,
+        bio: data.user.bio,
+        status: data.user.status,
+        isOnline: data.user.isOnline,
+        phone: data.user.phoneNumber,
+        about: data.user.status,
+        role: data.user.role,
+        phoneNumber: data.user.phoneNumber,
+        createdAt: data.user.createdAt,
+      };
+
+      const isAdmin = data.isAdmin || data.user.role === 'admin';
+
       set({
         isAuthenticated: true,
-        isAdmin: true,
-        currentUser: {
-          id: 'admin-1',
-          zaxoNumber: '482-719-356',
-          displayName: 'Eunus',
-          profilePicture: null,
-          bio: 'Managing Zaxo Messenger',
-          status: 'Available',
-          isOnline: true,
-          phone: '+1-555-0101',
-          about: 'Hey there! I am using Zaxo',
+        isAdmin,
+        currentUser: userPayload,
+        token: data.token,
+      });
+
+      saveAuthToStorage(userPayload, data.token, isAdmin);
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Network error. Please check your connection.' };
+    }
+  },
+
+  register: async (registerData: RegisterData) => {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+
+      const userPayload: UserPayload = {
+        id: data.user.id,
+        email: data.user.email,
+        zaxoNumber: data.user.zaxoNumber,
+        displayName: data.user.displayName,
+        profilePicture: data.user.profilePicture,
+        bio: data.user.bio,
+        status: data.user.status,
+        isOnline: data.user.isOnline,
+        phone: data.user.phoneNumber,
+        about: data.user.status,
+        role: data.user.role,
+        phoneNumber: data.user.phoneNumber,
+        createdAt: data.user.createdAt,
+      };
+
+      const isAdmin = data.user.role === 'admin';
+
+      set({
+        isAuthenticated: true,
+        isAdmin,
+        currentUser: userPayload,
+        token: data.token,
+      });
+
+      saveAuthToStorage(userPayload, data.token, isAdmin);
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Network error. Please check your connection.' };
+    }
+  },
+
+  logout: async () => {
+    const { token, currentUser } = get();
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': currentUser?.id || '',
         },
       });
-      return true;
+    } catch {
+      // Ignore logout API errors
     }
-    return false;
+
+    clearAuthStorage();
+    set({
+      isAuthenticated: false,
+      currentUser: null,
+      isAdmin: false,
+      token: null,
+    });
   },
-  logout: () => set({ isAuthenticated: false, currentUser: null, isAdmin: false }),
+
+  restoreSession: async () => {
+    const stored = loadAuthFromStorage();
+    if (!stored) return;
+
+    set({ isLoading: true });
+
+    try {
+      // Verify the session is still valid by fetching user data
+      const response = await fetch('/api/auth/me', {
+        headers: { 'x-user-id': stored.user.id },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const userPayload: UserPayload = {
+          id: data.user.id,
+          email: data.user.email,
+          zaxoNumber: data.user.zaxoNumber,
+          displayName: data.user.displayName,
+          profilePicture: data.user.profilePicture,
+          bio: data.user.bio,
+          status: data.user.status,
+          isOnline: data.user.isOnline,
+          phone: data.user.phoneNumber,
+          about: data.user.status,
+          role: data.user.role,
+          phoneNumber: data.user.phoneNumber,
+          createdAt: data.user.createdAt,
+        };
+
+        const isAdmin = data.isAdmin || data.user.role === 'admin';
+
+        set({
+          isAuthenticated: true,
+          isAdmin,
+          currentUser: userPayload,
+          token: stored.token,
+          isLoading: false,
+        });
+
+        // Update stored data in case it changed
+        saveAuthToStorage(userPayload, stored.token, isAdmin);
+      } else {
+        // Session invalid, clear storage
+        clearAuthStorage();
+        set({
+          isAuthenticated: false,
+          currentUser: null,
+          isAdmin: false,
+          token: null,
+          isLoading: false,
+        });
+      }
+    } catch {
+      // Network error, but still use cached session data
+      set({
+        isAuthenticated: true,
+        isAdmin: stored.isAdmin,
+        currentUser: stored.user,
+        token: stored.token,
+        isLoading: false,
+      });
+    }
+  },
+
   lockApp: () => set({ isAppLocked: true }),
   unlockApp: (pin) => {
     const stored = get().pinCode;

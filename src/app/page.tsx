@@ -6,7 +6,7 @@ import {
   MessageCircle, Phone, User,
   LayoutDashboard, Users, Hash, Shield, Settings,
   PhoneCall, FileText, Bell, ArrowLeftRight,
-  Mail, Lock, Loader2, AlertCircle,
+  Mail, Lock, Loader2, AlertCircle, UserPlus, Eye, EyeOff, Phone as PhoneIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,10 +70,11 @@ const adminNavItems = [
 ];
 
 // ========== Login Screen ==========
-function LoginScreen() {
+function LoginScreen({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -81,10 +82,10 @@ function LoginScreen() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    await new Promise((r) => setTimeout(r, 800));
-    const success = login(email, password);
-    if (!success) {
-      setError('Invalid email or password');
+
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.error || 'Invalid email or password');
     }
     setLoading(false);
   };
@@ -147,14 +148,21 @@ function LoginScreen() {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 h-11"
+                className="pl-10 pr-10 h-11"
                 required
                 autoComplete="current-password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
 
@@ -184,14 +192,267 @@ function LoginScreen() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="mt-6 text-center"
+        >
+          <p className="text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <button
+              onClick={onSwitchToRegister}
+              className="text-primary font-semibold hover:underline"
+            >
+              Create Account
+            </button>
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-8 text-center"
+          className="mt-6 text-center"
         >
           <p className="text-xs text-muted-foreground">
             End-to-end encrypted messaging
           </p>
           <p className="text-[10px] text-muted-foreground mt-2">
             zaxo.eu.cc
+          </p>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+// ========== Registration Screen ==========
+function RegistrationScreen({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
+  const { register } = useAuthStore();
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Client-side validation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!displayName.trim()) {
+      setError('Display name is required');
+      return;
+    }
+
+    if (!phoneNumber.trim()) {
+      setError('Phone number is required');
+      return;
+    }
+
+    setLoading(true);
+
+    const result = await register({
+      displayName: displayName.trim(),
+      email: email.trim(),
+      password,
+      phoneNumber: phoneNumber.trim(),
+    });
+
+    if (!result.success) {
+      setError(result.error || 'Registration failed');
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="h-dvh w-screen flex items-center justify-center bg-background p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full max-w-sm py-6"
+      >
+        <div className="flex flex-col items-center mb-6">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+            className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-primary flex items-center justify-center mb-3 shadow-lg"
+          >
+            <UserPlus className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-2xl sm:text-3xl font-bold text-foreground"
+          >
+            Create Account
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-sm text-muted-foreground mt-1"
+          >
+            Join Zaxo Messenger
+          </motion.p>
+        </div>
+
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          onSubmit={handleRegister}
+          className="space-y-3"
+        >
+          {/* Display Name */}
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Display Name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="pl-10 h-11"
+              required
+              autoComplete="name"
+            />
+          </div>
+
+          {/* Email */}
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10 h-11"
+              required
+              autoComplete="email"
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div className="relative">
+            <PhoneIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="tel"
+              placeholder="Phone number (e.g. +1-555-0102)"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="pl-10 h-11"
+              required
+              autoComplete="tel"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password (min 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pl-10 pr-10 h-11"
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+
+          {/* Confirm Password */}
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="pl-10 pr-10 h-11"
+              required
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 rounded-lg px-3 py-2"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </motion.div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full h-11 text-sm font-semibold"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </Button>
+        </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="mt-6 text-center"
+        >
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <button
+              onClick={onSwitchToLogin}
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign In
+            </button>
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-4 text-center"
+        >
+          <p className="text-[10px] text-muted-foreground px-4">
+            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            Your Zaxo number will be assigned automatically.
           </p>
         </motion.div>
       </motion.div>
@@ -584,10 +845,40 @@ function AdminMobileNav() {
 // ========== Main Page ==========
 export default function ZaxoApp() {
   const { currentApp } = useAppStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading, restoreSession } = useAuthStore();
+  const [authScreen, setAuthScreen] = useState<'login' | 'register'>('login');
+  const [initialized, setInitialized] = useState(false);
+
+  // Restore session on mount
+  useEffect(() => {
+    restoreSession().finally(() => setInitialized(true));
+  }, []);
+
+  if (!initialized || isLoading) {
+    return (
+      <div className="h-dvh w-screen flex items-center justify-center bg-background">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+            <MessageCircle className="h-7 w-7 text-primary-foreground" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    if (authScreen === 'register') {
+      return <RegistrationScreen onSwitchToLogin={() => setAuthScreen('login')} />;
+    }
+    return <LoginScreen onSwitchToRegister={() => setAuthScreen('register')} />;
   }
 
   return (

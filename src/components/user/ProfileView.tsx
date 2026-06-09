@@ -30,6 +30,7 @@ import {
   Info,
   FileText,
   Globe,
+  LogOut,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -87,7 +88,7 @@ function SettingItem({ icon, label, value, rightElement, onClick, delay = 0 }: S
 }
 
 export default function ProfileView() {
-  const { currentUser } = useAuthStore();
+  const { currentUser, logout } = useAuthStore();
   const { setTab, setOverlay } = useAppStore();
   const { theme } = useSettingsStore();
   const [isEditingName, setIsEditingName] = useState(false);
@@ -95,6 +96,7 @@ export default function ProfileView() {
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [bio, setBio] = useState(currentUser?.bio || '');
   const [copied, setCopied] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleCopyNumber = async () => {
     if (!currentUser) return;
@@ -396,6 +398,25 @@ export default function ProfileView() {
             value="Set up app lock"
             onClick={() => setOverlay('settings-security')}
           />
+        </div>
+
+        <Separator />
+
+        {/* Logout */}
+        <div className="py-2 px-4">
+          <Button
+            variant="destructive"
+            className="w-full gap-2"
+            onClick={async () => {
+              setIsLoggingOut(true);
+              await logout();
+              setIsLoggingOut(false);
+            }}
+            disabled={isLoggingOut}
+          >
+            <LogOut className="h-4 w-4" />
+            {isLoggingOut ? 'Signing out...' : 'Sign Out'}
+          </Button>
         </div>
 
         <Separator />

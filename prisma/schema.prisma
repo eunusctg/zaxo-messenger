@@ -9,6 +9,8 @@ datasource db {
 
 model User {
   id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
   zaxoNumber      String   @unique
   displayName     String
   phoneNumber     String   @unique
@@ -24,6 +26,7 @@ model User {
   twoFactorEnabled Boolean @default(false)
   isSuspended     Boolean  @default(false)
   isBanned        Boolean  @default(false)
+  role            String   @default("user")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
