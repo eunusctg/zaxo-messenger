@@ -185,23 +185,66 @@
   animation: scanLine 2s linear infinite;
 }
 
-/* Flash/Zap icon glow animation */
+/* Flash/Zap icon glow animation - STUNNING */
 @keyframes flashGlow {
-  0%, 100% { filter: drop-shadow(0 0 2px oklch(0.72 0.17 162 / 40%)); }
-  50% { filter: drop-shadow(0 0 8px oklch(0.72 0.17 162 / 80%)) drop-shadow(0 0 16px oklch(0.72 0.17 162 / 40%)); }
+  0%, 100% {
+    filter: drop-shadow(0 0 3px oklch(0.72 0.17 162 / 50%));
+    transform: scale(1);
+  }
+  25% {
+    filter: drop-shadow(0 0 6px oklch(0.72 0.17 162 / 70%)) drop-shadow(0 0 12px oklch(0.72 0.17 162 / 40%));
+    transform: scale(1.05);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px oklch(0.72 0.17 162 / 90%)) drop-shadow(0 0 20px oklch(0.72 0.17 162 / 50%)) drop-shadow(0 0 30px oklch(0.72 0.17 162 / 20%));
+    transform: scale(1.1);
+  }
+  75% {
+    filter: drop-shadow(0 0 6px oklch(0.72 0.17 162 / 70%)) drop-shadow(0 0 12px oklch(0.72 0.17 162 / 40%));
+    transform: scale(1.05);
+  }
 }
 .flash-glow {
   animation: flashGlow 2s ease-in-out infinite;
 }
 
-/* Dial button pulse ring */
+/* Lightning bolt flash effect */
+@keyframes lightningFlash {
+  0% { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+  15% { opacity: 1; transform: scale(1.3) rotate(5deg); }
+  30% { opacity: 0.7; transform: scale(0.9) rotate(-3deg); }
+  45% { opacity: 1; transform: scale(1.1) rotate(0deg); }
+  60% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5) rotate(15deg); }
+}
+.lightning-flash {
+  animation: lightningFlash 3s ease-in-out infinite;
+}
+
+/* Dial button pulse ring - enhanced */
 @keyframes dialPulse {
-  0% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 60%); }
-  70% { box-shadow: 0 0 0 8px oklch(0.72 0.17 162 / 0%); }
-  100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 0%); }
+  0% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 70%); }
+  50% { box-shadow: 0 0 0 6px oklch(0.72 0.17 162 / 30%), 0 0 0 12px oklch(0.72 0.17 162 / 15%); }
+  100% { box-shadow: 0 0 0 12px oklch(0.72 0.17 162 / 0%), 0 0 0 24px oklch(0.72 0.17 162 / 0%); }
 }
 .dial-pulse {
-  animation: dialPulse 2s ease-out infinite;
+  animation: dialPulse 1.5s ease-out infinite;
+}
+
+/* Electric spark animation */
+@keyframes electricSpark {
+  0%, 100% {
+    box-shadow: 0 0 4px oklch(0.72 0.17 162 / 60%), inset 0 0 4px oklch(0.72 0.17 162 / 20%);
+  }
+  33% {
+    box-shadow: 0 0 8px oklch(0.72 0.17 162 / 80%), 0 0 16px oklch(0.72 0.17 162 / 40%), inset 0 0 8px oklch(0.72 0.17 162 / 30%);
+  }
+  66% {
+    box-shadow: 0 0 12px oklch(0.72 0.17 162 / 90%), 0 0 24px oklch(0.72 0.17 162 / 50%), 0 0 36px oklch(0.72 0.17 162 / 20%), inset 0 0 12px oklch(0.72 0.17 162 / 40%);
+  }
+}
+.electric-spark {
+  animation: electricSpark 2s ease-in-out infinite;
 }
 
 /* Call screen ripple for group calls */

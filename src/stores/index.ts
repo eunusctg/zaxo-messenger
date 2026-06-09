@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 // ==================== App Store ====================
 export type AppView = 'user' | 'admin';
-export type UserTab = 'chats' | 'status' | 'calls' | 'profile';
+export type UserTab = 'chats' | 'calls' | 'profile';
 export type AdminTab = 'dashboard' | 'users' | 'zaxo-numbers' | 'moderation' | 'config' | 'calling' | 'logs' | 'notifications';
 
 interface AppState {
@@ -315,6 +315,20 @@ export interface CallRecord {
   timestamp: string;
   isGroup: boolean;
   participants?: { id: string; name: string }[];
+  callQuality?: 'excellent' | 'good' | 'fair' | 'poor';
+  wasRecorded?: boolean;
+}
+
+export interface CallParticipant {
+  id: string;
+  name: string;
+  avatar: string | null;
+  isMuted?: boolean;
+  isVideoOn?: boolean;
+  isSpeaking?: boolean;
+  isHandRaised?: boolean;
+  joinTime?: number;
+  connectionQuality?: 'excellent' | 'good' | 'fair' | 'poor';
 }
 
 interface CallState {
@@ -322,8 +336,8 @@ interface CallState {
     id: string;
     callType: 'audio' | 'video';
     isGroup: boolean;
-    participants: { id: string; name: string; avatar: string | null; isMuted?: boolean; isVideoOn?: boolean; isSpeaking?: boolean }[];
-    status: 'ringing' | 'connected' | 'ended';
+    participants: CallParticipant[];
+    status: 'ringing' | 'connecting' | 'connected' | 'reconnecting' | 'ended';
     isMuted: boolean;
     isSpeakerOn: boolean;
     isVideoOn: boolean;
@@ -334,11 +348,23 @@ interface CallState {
     isBluetoothConnected: boolean;
     duration: number;
     callQuality: 'excellent' | 'good' | 'fair' | 'poor';
-    networkStrength: number; // 0-4
+    networkStrength: number;
+    e2eEncrypted: boolean;
+    isLowDataMode: boolean;
+    isVirtualBackground: boolean;
+    isPictureInPicture: boolean;
+    isSwitchingCamera: boolean;
+    isLiveCaptioning: boolean;
+    isVoiceEnhancement: boolean;
+    groupCallLayout: 'grid' | 'speaker' | 'presentation';
+    raisedHands: string[];
+    activeSpeakerId: string | null;
+    maxParticipants: number;
+    callStartTime: number | null;
   } | null;
   callHistory: CallRecord[];
   setActiveCall: (call: CallState['activeCall']) => void;
-  updateCallStatus: (status: 'ringing' | 'connected' | 'ended') => void;
+  updateCallStatus: (status: CallState['activeCall'] extends { status: infer S } ? S : never) => void;
   toggleMute: () => void;
   toggleSpeaker: () => void;
   toggleVideo: () => void;
@@ -347,7 +373,17 @@ interface CallState {
   toggleNoiseCancellation: () => void;
   toggleHold: () => void;
   toggleBluetooth: () => void;
-  addParticipant: (participant: { id: string; name: string; avatar: string | null }) => void;
+  toggleLowDataMode: () => void;
+  toggleVirtualBackground: () => void;
+  togglePictureInPicture: () => void;
+  toggleSwitchCamera: () => void;
+  toggleLiveCaptioning: () => void;
+  toggleVoiceEnhancement: () => void;
+  setGroupCallLayout: (layout: 'grid' | 'speaker' | 'presentation') => void;
+  raiseHand: (participantId: string) => void;
+  lowerHand: (participantId: string) => void;
+  setActiveSpeaker: (participantId: string | null) => void;
+  addParticipant: (participant: CallParticipant) => void;
   removeParticipant: (participantId: string) => void;
   endCall: () => void;
   setCallHistory: (history: CallRecord[]) => void;
@@ -392,6 +428,50 @@ export const useCallStore = create<CallState>((set) => ({
   toggleBluetooth: () =>
     set((s) => ({
       activeCall: s.activeCall ? { ...s.activeCall, isBluetoothConnected: !s.activeCall.isBluetoothConnected } : null,
+    })),
+  toggleLowDataMode: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isLowDataMode: !s.activeCall.isLowDataMode } : null,
+    })),
+  toggleVirtualBackground: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isVirtualBackground: !s.activeCall.isVirtualBackground } : null,
+    })),
+  togglePictureInPicture: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isPictureInPicture: !s.activeCall.isPictureInPicture } : null,
+    })),
+  toggleSwitchCamera: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isSwitchingCamera: !s.activeCall.isSwitchingCamera } : null,
+    })),
+  toggleLiveCaptioning: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isLiveCaptioning: !s.activeCall.isLiveCaptioning } : null,
+    })),
+  toggleVoiceEnhancement: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isVoiceEnhancement: !s.activeCall.isVoiceEnhancement } : null,
+    })),
+  setGroupCallLayout: (layout) =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, groupCallLayout: layout } : null,
+    })),
+  raiseHand: (participantId) =>
+    set((s) => ({
+      activeCall: s.activeCall
+        ? { ...s.activeCall, raisedHands: [...s.activeCall.raisedHands.filter((h) => h !== participantId), participantId] }
+        : null,
+    })),
+  lowerHand: (participantId) =>
+    set((s) => ({
+      activeCall: s.activeCall
+        ? { ...s.activeCall, raisedHands: s.activeCall.raisedHands.filter((h) => h !== participantId) }
+        : null,
+    })),
+  setActiveSpeaker: (participantId) =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, activeSpeakerId: participantId } : null,
     })),
   addParticipant: (participant) =>
     set((s) => ({

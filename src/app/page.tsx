@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageCircle, Phone, User, Camera,
+  MessageCircle, Phone, User,
   LayoutDashboard, Users, Hash, Shield, Settings,
-  PhoneCall, FileText, Bell, ArrowLeftRight, CircleDot,
+  PhoneCall, FileText, Bell, ArrowLeftRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppStore, useAuthStore, useChatStore, useCallStore, useStatusStore } from '@/stores';
@@ -46,7 +46,6 @@ import NotificationManager from '@/components/admin/NotificationManager';
 // ========== User App Bottom Nav Items ==========
 const userNavItems = [
   { id: 'chats' as const, icon: MessageCircle, label: 'Chats' },
-  { id: 'status' as const, icon: Camera, label: 'Status' },
   { id: 'calls' as const, icon: Phone, label: 'Calls' },
   { id: 'profile' as const, icon: User, label: 'Profile' },
 ];
@@ -100,7 +99,7 @@ function UserApp() {
   const { activeCall } = useCallStore();
   const { isAppLocked } = useAuthStore();
   const { setContactStatuses } = useStatusStore();
-  const [viewingStatusUserId, setViewingStatusUserId] = useState<string | null>(null);
+
   const [mediaGalleryMsg, setMediaGalleryMsg] = useState<{ url?: string; type: string; name: string; sender: string; time: string } | null>(null);
 
   // Initialize mock data
@@ -170,13 +169,6 @@ function UserApp() {
             </div>
           </div>
         );
-      case 'status':
-        return (
-          <StatusView
-            onViewStatus={(userId) => setViewingStatusUserId(userId)}
-            onClose={() => {}}
-          />
-        );
       case 'calls':
         return <CallHistory />;
       case 'profile':
@@ -203,7 +195,7 @@ function UserApp() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentTab + overlay}
@@ -211,7 +203,7 @@ function UserApp() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
-            className="h-full"
+            className="min-h-full"
           >
             {renderContent()}
           </motion.div>
@@ -239,9 +231,6 @@ function UserApp() {
               >
                 <div className="relative">
                   <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
-                  {item.id === 'status' && (
-                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary border border-background" />
-                  )}
                 </div>
                 <span className="text-[10px] font-medium">{item.label}</span>
                 {isActive && (
@@ -274,13 +263,7 @@ function UserApp() {
       {/* Call Screen Overlay */}
       {activeCall && <CallScreen />}
 
-      {/* Status Viewer Overlay */}
-      {viewingStatusUserId && (
-        <StatusViewer
-          userId={viewingStatusUserId}
-          onClose={() => setViewingStatusUserId(null)}
-        />
-      )}
+
 
       {/* Media Gallery Overlay */}
       {mediaGalleryMsg && (

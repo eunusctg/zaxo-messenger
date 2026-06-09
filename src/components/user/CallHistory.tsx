@@ -6,7 +6,7 @@ import {
   Phone, Video, PhoneOff, ArrowUpRight, ArrowDownLeft,
   PhoneCall, Users, Zap, Search, Filter, Clock, Star,
   MoreVertical, MessageCircle, Shield, Radio, MonitorUp,
-  Volume2, CircleDot, Wifi
+  Volume2, CircleDot, Wifi, Sparkles,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -174,6 +174,16 @@ function CallItem({ call, isCurrentUserCaller, onCallBack }: CallItemProps) {
               Group
             </Badge>
           )}
+          {isVideo && (
+            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-blue-500/10 text-blue-500">
+              HD
+            </Badge>
+          )}
+          {call.wasRecorded && (
+            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 bg-red-500/10 text-red-500">
+              REC
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
           {isOutgoing ? (
@@ -190,6 +200,11 @@ function CallItem({ call, isCurrentUserCaller, onCallBack }: CallItemProps) {
             {isMissed ? 'Missed' : isOutgoing ? 'Outgoing' : 'Incoming'}
             {call.duration > 0 && ` · ${formatDuration(call.duration)}`}
           </span>
+          {call.callQuality && (
+            <span className={`text-[9px] ${call.callQuality === 'excellent' ? 'text-emerald-500' : call.callQuality === 'good' ? 'text-blue-500' : 'text-amber-500'}`}>
+              · {call.callQuality}
+            </span>
+          )}
         </div>
       </div>
 
@@ -314,6 +329,18 @@ export default function CallHistory() {
         duration: 0,
         callQuality: 'excellent',
         networkStrength: 4,
+        e2eEncrypted: true,
+        isLowDataMode: false,
+        isVirtualBackground: false,
+        isPictureInPicture: false,
+        isSwitchingCamera: false,
+        isLiveCaptioning: false,
+        isVoiceEnhancement: false,
+        groupCallLayout: 'grid',
+        raisedHands: [],
+        activeSpeakerId: null,
+        maxParticipants: 32,
+        callStartTime: null,
       });
     },
     [setActiveCall]
@@ -338,6 +365,18 @@ export default function CallHistory() {
         duration: 0,
         callQuality: 'excellent',
         networkStrength: 4,
+        e2eEncrypted: true,
+        isLowDataMode: false,
+        isVirtualBackground: false,
+        isPictureInPicture: false,
+        isSwitchingCamera: false,
+        isLiveCaptioning: false,
+        isVoiceEnhancement: false,
+        groupCallLayout: 'grid',
+        raisedHands: [],
+        activeSpeakerId: null,
+        maxParticipants: 32,
+        callStartTime: null,
       });
       setShowNewCall(false);
     },
@@ -376,8 +415,9 @@ export default function CallHistory() {
             onClick={() => setShowNewCall(true)}
             className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-4 h-9"
           >
-            <div className="flash-glow">
+            <div className="flash-glow relative">
               <Zap className="h-4 w-4" />
+              <Sparkles className="h-2.5 w-2.5 text-primary-foreground/60 absolute -top-1 -right-1 lightning-flash" />
             </div>
             New Call
           </Button>
