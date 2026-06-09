@@ -1,0 +1,23 @@
+{
+  "name": "Zaxo Admin",
+  "short_name": "Zaxo",
+  "description": "Zaxo Messenger - Secure messaging, audio & video calls",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d9488",
+  "theme_color": "#0d9488",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    { "src": "/icon-36.png", "sizes": "36x36", "type": "image/png" },
+    { "src": "/icon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "/icon-120.png", "sizes": "120x120", "type": "image/png" },
+    { "src": "/icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["communication", "social"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
