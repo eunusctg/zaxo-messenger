@@ -15,6 +15,12 @@ import {
   Reply,
   Forward,
   Mic,
+  Star,
+  MapPin,
+  FileText,
+  BarChart3,
+  Link2,
+  Image,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -49,9 +55,148 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
-  // Find if there's a message being replied to
   const isReply = !!message.replyToId;
   const isForwarded = message.isForwarded;
+  const isDeleted = message.deletedForEveryone;
+  const isEdited = message.isEdited;
+  const isStarred = message.isStarred;
+
+  // Render message content based on type
+  const renderContent = () => {
+    if (isDeleted) {
+      return (
+        <p className="text-sm italic opacity-50 break-words">This message was deleted</p>
+      );
+    }
+
+    switch (message.messageType) {
+      case 'voice':
+        return (
+          <div className="flex items-center gap-2 min-w-[180px]">
+            <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full shrink-0 ${isSent ? 'text-primary-foreground hover:bg-primary-foreground/20' : 'text-primary hover:bg-primary/20'}`}>
+              <Mic className="h-4 w-4" />
+            </Button>
+            <div className="flex-1">
+              <div className="flex items-center gap-0.5 h-6">
+                {(message.voiceWaveform || [3,5,8,6,4,7,5,3,6,8,4,5,7,3,5,8,6,4,3,5]).map((v, i) => (
+                  <div
+                    key={i}
+                    className={`w-[3px] rounded-full ${isSent ? 'bg-primary-foreground/60' : 'bg-foreground/30'}`}
+                    style={{ height: `${Math.max(v, 2) * 1.5}px` }}
+                  />
+                ))}
+              </div>
+            </div>
+            <span className={`text-[10px] shrink-0 ${isSent ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+              {message.voiceDuration ? `${Math.floor(message.voiceDuration / 60)}:${(message.voiceDuration % 60).toString().padStart(2, '0')}` : '0:00'}
+            </span>
+          </div>
+        );
+      case 'image':
+        return (
+          <div className="space-y-1">
+            <div className={`rounded-lg h-40 w-48 flex items-center justify-center ${isSent ? 'bg-primary-foreground/10' : 'bg-muted-foreground/10'}`}>
+              <Image className={`h-8 w-8 ${isSent ? 'text-primary-foreground/40' : 'text-muted-foreground/40'}`} alt="Photo" />
+            </div>
+            {message.content && <p className="text-sm leading-relaxed break-words">{message.content}</p>}
+          </div>
+        );
+      case 'document':
+        return (
+          <div className="flex items-center gap-2">
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${isSent ? 'bg-primary-foreground/10' : 'bg-muted'}`}>
+              <FileText className={`h-5 w-5 ${isSent ? 'text-primary-foreground' : 'text-foreground'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{message.mediaUrl || 'Document'}</p>
+              <p className={`text-[10px] ${isSent ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>PDF · 2.4 MB</p>
+            </div>
+          </div>
+        );
+      case 'location':
+        return (
+          <div className="space-y-1">
+            <div className={`rounded-lg h-32 w-48 flex items-center justify-center relative overflow-hidden ${isSent ? 'bg-primary-foreground/10' : 'bg-muted'}`}>
+              <div className="absolute inset-0 opacity-20">
+                <div className="grid grid-cols-8 grid-rows-6 h-full w-full gap-px p-1">
+                  {Array.from({ length: 48 }).map((_, i) => (
+                    <div key={i} className={`rounded-sm ${isSent ? 'bg-primary-foreground/30' : 'bg-foreground/20'}`} />
+                  ))}
+                </div>
+              </div>
+              <MapPin className={`h-6 w-6 relative z-10 ${isSent ? 'text-primary-foreground' : 'text-primary'}`} />
+            </div>
+            {message.locationData && (
+              <p className="text-sm font-medium">{message.locationData.name}</p>
+            )}
+            {message.content && <p className="text-xs opacity-70">{message.content}</p>}
+          </div>
+        );
+      case 'poll':
+        return (
+          <div className="space-y-2 min-w-[200px]">
+            <div className="flex items-center gap-1.5">
+              <BarChart3 className={`h-4 w-4 ${isSent ? 'text-primary-foreground' : 'text-primary'}`} />
+              <span className="text-sm font-medium">Poll</span>
+            </div>
+            {message.pollData && (
+              <>
+                <p className="text-sm font-medium">{message.pollData.question}</p>
+                <div className="space-y-1.5">
+                  {message.pollData.options.map((opt, i) => (
+                    <div key={i} className="relative rounded-md overflow-hidden">
+                      <div
+                        className={`absolute inset-y-0 left-0 ${isSent ? 'bg-primary-foreground/20' : 'bg-primary/20'}`}
+                        style={{ width: `${opt.votes > 0 ? Math.max((opt.votes / Math.max(...message.pollData!.options.map(o => o.votes))) * 100, 5) : 0}%` }}
+                      />
+                      <div className="relative flex items-center justify-between px-2 py-1">
+                        <span className="text-xs">{opt.text}</span>
+                        <span className="text-[10px] opacity-70">{opt.votes}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      case 'link':
+        return (
+          <div className="space-y-1">
+            <p className="text-sm leading-relaxed break-words">{message.content}</p>
+            {message.linkPreview && (
+              <div className={`rounded-lg p-2 mt-1 ${isSent ? 'bg-primary-foreground/10' : 'bg-muted'}`}>
+                <div className={`h-2 w-16 rounded mb-1 ${isSent ? 'bg-primary-foreground/30' : 'bg-foreground/20'}`} />
+                <p className="text-xs font-medium truncate">{message.linkPreview.title}</p>
+                <p className="text-[10px] opacity-70 line-clamp-2">{message.linkPreview.description}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <Link2 className="h-3 w-3 opacity-50" />
+                  <span className="text-[10px] opacity-50">{message.linkPreview.url}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      case 'contact':
+        return (
+          <div className="flex items-center gap-2">
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSent ? 'bg-primary-foreground/10' : 'bg-primary/10'}`}>
+              <Users className={`h-5 w-5 ${isSent ? 'text-primary-foreground' : 'text-primary'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{message.contactData?.name || 'Contact'}</p>
+              <p className={`text-[10px] ${isSent ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{message.contactData?.zaxoNumber || ''}</p>
+            </div>
+          </div>
+        );
+      case 'sticker':
+        return (
+          <div className="text-4xl text-center py-1">{message.content || '😺'}</div>
+        );
+      default:
+        return <p className="text-sm leading-relaxed break-words">{message.content}</p>;
+    }
+  };
 
   return (
     <motion.div
@@ -62,13 +207,14 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
     >
       <div
         className={`max-w-[75%] px-3 py-2 relative group ${
+          isDeleted ? 'bg-muted/50' :
           isSent
             ? 'bg-primary text-primary-foreground chat-bubble-sent'
             : 'bg-muted text-foreground chat-bubble-received'
         }`}
       >
         {/* Forwarded indicator */}
-        {isForwarded && (
+        {isForwarded && !isDeleted && (
           <div className="flex items-center gap-1 mb-1 opacity-70">
             <Forward className="h-3 w-3" />
             <span className="text-[10px] font-medium">Forwarded</span>
@@ -76,7 +222,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
         )}
 
         {/* Reply indicator */}
-        {isReply && (
+        {isReply && !isDeleted && (
           <div
             className={`border-l-2 mb-1 pl-2 py-0.5 rounded-sm text-[11px] ${
               isSent ? 'border-primary-foreground/40 bg-primary-foreground/10' : 'border-primary/40 bg-primary/5'
@@ -87,7 +233,17 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
         )}
 
         {/* Message content */}
-        <p className="text-sm leading-relaxed break-words">{message.content}</p>
+        {renderContent()}
+
+        {/* Star indicator */}
+        {isStarred && !isDeleted && (
+          <Star className={`absolute -top-1 -left-1 h-3 w-3 fill-amber-400 text-amber-400`} />
+        )}
+
+        {/* Edited indicator */}
+        {isEdited && !isDeleted && (
+          <span className={`text-[9px] ${isSent ? 'text-primary-foreground/50' : 'text-muted-foreground/70'} ml-1`}>edited</span>
+        )}
 
         {/* Footer: time + read status + reactions */}
         <div className={`flex items-center gap-1 mt-0.5 ${isSent ? 'justify-end' : 'justify-start'}`}>
@@ -101,7 +257,7 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
           <span className={`text-[10px] ${isSent ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
             {message.createdAt}
           </span>
-          {isSent && (
+          {isSent && !isDeleted && (
             message.isRead ? (
               <CheckCheck className="h-3 w-3 text-primary-foreground/70" />
             ) : message.isDelivered ? (
@@ -113,12 +269,14 @@ function MessageBubble({ message, isSent, showReply }: MessageBubbleProps) {
         </div>
 
         {/* Reply action on hover */}
-        <button
-          onClick={() => showReply?.(message.id)}
-          className="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground rounded-full p-1 shadow-md border border-border"
-        >
-          <Reply className="h-3 w-3" />
-        </button>
+        {!isDeleted && (
+          <button
+            onClick={() => showReply?.(message.id)}
+            className="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground rounded-full p-1 shadow-md border border-border"
+          >
+            <Reply className="h-3 w-3" />
+          </button>
+        )}
       </div>
     </motion.div>
   );
@@ -140,10 +298,21 @@ function EmptyState() {
   );
 }
 
-export default function ChatView() {
+export default function ChatView({
+  onOpenMediaGallery,
+  onOpenWallpaper,
+  onOpenE2EInfo,
+  onOpenVoiceRecorder,
+}: {
+  onOpenMediaGallery?: (media: { url?: string; type: string; name: string; sender: string; time: string }) => void;
+  onOpenWallpaper?: () => void;
+  onOpenE2EInfo?: () => void;
+  onOpenVoiceRecorder?: () => void;
+}) {
   const { activeChat, messages, setActiveChat } = useChatStore();
   const [inputText, setInputText] = useState('');
   const [showEmojiHint, setShowEmojiHint] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -199,15 +368,28 @@ export default function ChatView() {
 
         <div className="min-w-0 flex-1">
           <h2 className="font-semibold text-sm truncate">{activeChat.name}</h2>
-          <p className="text-xs text-muted-foreground">
-            {activeChat.isGroup
-              ? `${activeChat.members.length} members`
-              : activeChat.isTyping
-                ? 'typing...'
-                : isOtherOnline
-                  ? 'Online'
-                  : 'Last seen recently'}
-          </p>
+          <div className="flex items-center gap-1">
+            {activeChat.e2eEncrypted && !activeChat.isGroup && (
+              <svg className="h-3 w-3 text-muted-foreground shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {activeChat.isGroup
+                ? `${activeChat.members.length} members`
+                : activeChat.isTyping
+                  ? 'typing...'
+                  : isOtherOnline
+                    ? 'Online'
+                    : 'Last seen recently'}
+            </p>
+            {activeChat.disappearingMessages && (
+              <span className="text-[10px] text-muted-foreground ml-1">
+                ⏱ {activeChat.disappearingDuration}h
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">

@@ -3,13 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageCircle, Phone, QrCode, User,
+  MessageCircle, Phone, QrCode, User, Camera,
   LayoutDashboard, Users, Hash, Shield, Settings,
-  PhoneCall, FileText, Bell, ArrowLeftRight,
+  PhoneCall, FileText, Bell, ArrowLeftRight, CircleDot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAppStore, useAuthStore, useChatStore, useCallStore } from '@/stores';
-import { mockChats, mockMessages, mockCallHistory } from '@/lib/mock-data';
+import { useAppStore, useAuthStore, useChatStore, useCallStore, useStatusStore } from '@/stores';
+import { mockChats, mockMessages, mockCallHistory, mockContactStatuses } from '@/lib/mock-data';
 
 // User App Components
 import ChatList from '@/components/user/ChatList';
@@ -20,6 +20,20 @@ import QRCodeView from '@/components/user/QRCodeView';
 import QRScanner from '@/components/user/QRScanner';
 import ProfileView from '@/components/user/ProfileView';
 import SettingsView from '@/components/user/SettingsView';
+
+// WhatsApp Feature Components
+import StatusView from '@/components/user/StatusView';
+import StatusViewer from '@/components/user/StatusViewer';
+import ContactsScreen from '@/components/user/ContactsScreen';
+import NewGroupScreen from '@/components/user/NewGroupScreen';
+import BroadcastScreen from '@/components/user/BroadcastScreen';
+import VoiceRecorder from '@/components/user/VoiceRecorder';
+import MessageActions from '@/components/user/MessageActions';
+import StickerEmojiPicker from '@/components/user/StickerEmojiPicker';
+import MediaGallery from '@/components/user/MediaGallery';
+import ChatWallpaper from '@/components/user/ChatWallpaper';
+import AppLockScreen from '@/components/user/AppLockScreen';
+import E2EInfo from '@/components/user/E2EInfo';
 
 // Admin App Components
 import Dashboard from '@/components/admin/Dashboard';
@@ -34,6 +48,7 @@ import NotificationManager from '@/components/admin/NotificationManager';
 // ========== User App Bottom Nav Items ==========
 const userNavItems = [
   { id: 'chats' as const, icon: MessageCircle, label: 'Chats' },
+  { id: 'status' as const, icon: Camera, label: 'Status' },
   { id: 'calls' as const, icon: Phone, label: 'Calls' },
   { id: 'qr' as const, icon: QrCode, label: 'QR' },
   { id: 'profile' as const, icon: User, label: 'Profile' },
@@ -53,7 +68,7 @@ const adminNavItems = [
 
 // ========== App Switcher ==========
 function AppSwitcher() {
-  const { currentApp, setApp, setTab } = useAppStore();
+  const { currentApp, setApp } = useAppStore();
 
   return (
     <div className="flex items-center gap-1 rounded-full bg-muted p-1">
@@ -83,16 +98,17 @@ function AppSwitcher() {
 
 // ========== User App ==========
 function UserApp() {
-  const { currentTab, setTab } = useAppStore();
+  const { currentTab, setTab, overlay, setOverlay } = useAppStore();
   const { activeChat, setActiveChat } = useChatStore();
   const { activeCall } = useCallStore();
-  const { currentUser } = useAuthStore();
-  const [showQRScanner, setShowQRScanner] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const { isAppLocked } = useAuthStore();
+  const { setContactStatuses } = useStatusStore();
+  const [viewingStatusUserId, setViewingStatusUserId] = useState<string | null>(null);
+  const [mediaGalleryMsg, setMediaGalleryMsg] = useState<{ url?: string; type: string; name: string; sender: string; time: string } | null>(null);
 
   // Initialize mock data
   useEffect(() => {
-    const { chats, setChats, setMessages, callHistory, setCallHistory } = useChatStore.getState();
+    const { chats, setChats, setMessages } = useChatStore.getState();
     if (chats.length === 0) {
       setChats(mockChats);
       Object.entries(mockMessages).forEach(([chatId, msgs]) => {
@@ -103,33 +119,66 @@ function UserApp() {
     if (callStore.callHistory.length === 0) {
       callStore.setCallHistory(mockCallHistory);
     }
-  }, []);
+    const statusStore = useStatusStore.getState();
+    if (statusStore.contactStatuses.length === 0) {
+      setContactStatuses(mockContactStatuses);
+    }
+  }, [setContactStatuses]);
 
   // Determine if we're viewing a chat on mobile
   const isViewingChat = currentTab === 'chats' && activeChat !== null;
+  const showBottomNav = !(currentTab === 'chats' && activeChat !== null) && overlay === 'none';
 
   const renderContent = () => {
-    if (showSettings) {
-      return <SettingsView />;
-    }
-
-    if (showQRScanner) {
-      return <QRScanner />;
+    // Overlay screens take priority
+    switch (overlay) {
+      case 'contacts':
+        return <ContactsScreen onClose={() => setOverlay('none')} />;
+      case 'new-group':
+        return <NewGroupScreen onClose={() => setOverlay('none')} />;
+      case 'new-broadcast':
+        return <BroadcastScreen onClose={() => setOverlay('none')} />;
+      case 'chat-wallpaper':
+        return <ChatWallpaper onClose={() => setOverlay('none')} />;
+      case 'e2e-info':
+        return <E2EInfo onClose={() => setOverlay('none')} />;
+      case 'voice-recorder':
+        return (
+          <div className="h-full flex flex-col">
+            <ChatView onOpenMediaGallery={(m) => setMediaGalleryMsg(m)} />
+            <VoiceRecorder
+              onCancel={() => setOverlay('none')}
+              onSend={() => setOverlay('none')}
+            />
+          </div>
+        );
+      default:
+        break;
     }
 
     switch (currentTab) {
       case 'chats':
         return (
           <div className="flex h-full">
-            {/* Chat list - hidden on mobile when viewing a chat */}
             <div className={`${isViewingChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-border`}>
-              <ChatList />
+              <ChatList onNewChat={() => setOverlay('contacts')} />
             </div>
-            {/* Chat view */}
             <div className={`${isViewingChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
-              <ChatView />
+              <ChatView
+                onOpenMediaGallery={(m) => setMediaGalleryMsg(m)}
+                onOpenWallpaper={() => setOverlay('chat-wallpaper')}
+                onOpenE2EInfo={() => setOverlay('e2e-info')}
+                onOpenVoiceRecorder={() => setOverlay('voice-recorder')}
+              />
             </div>
           </div>
+        );
+      case 'status':
+        return (
+          <StatusView
+            onViewStatus={(userId) => setViewingStatusUserId(userId)}
+            onClose={() => {}}
+          />
         );
       case 'calls':
         return <CallHistory />;
@@ -144,6 +193,9 @@ function UserApp() {
 
   return (
     <div className="flex h-full flex-col bg-background">
+      {/* App Lock Screen */}
+      {isAppLocked && <AppLockScreen />}
+
       {/* Top bar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <div className="flex items-center gap-2">
@@ -159,7 +211,7 @@ function UserApp() {
       <div className="flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentTab + (showSettings ? '-settings' : '') + (showQRScanner ? '-scanner' : '')}
+            key={currentTab + overlay}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -171,9 +223,9 @@ function UserApp() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom navigation - hidden on desktop when viewing chats */}
-      {!(currentTab === 'chats' && activeChat !== null) && (
-        <div className="flex items-center justify-around border-t border-border bg-background px-2 py-1 md:py-2">
+      {/* Bottom navigation */}
+      {showBottomNav && (
+        <div className="flex items-center justify-around border-t border-border bg-background px-1 py-1 md:py-2">
           {userNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -184,13 +236,18 @@ function UserApp() {
                   setTab(item.id);
                   if (item.id !== 'chats') setActiveChat(null);
                 }}
-                className={`flex flex-col items-center gap-0.5 rounded-lg px-4 py-1.5 transition-all ${
+                className={`flex flex-col items-center gap-0.5 rounded-lg px-3 py-1.5 transition-all ${
                   isActive
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
+                <div className="relative">
+                  <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
+                  {item.id === 'status' && (
+                    <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-primary border border-background" />
+                  )}
+                </div>
                 <span className="text-[10px] font-medium">{item.label}</span>
                 {isActive && (
                   <motion.div
@@ -205,7 +262,7 @@ function UserApp() {
       )}
 
       {/* Mobile back button for chat view */}
-      {isViewingChat && (
+      {isViewingChat && overlay === 'none' && (
         <div className="md:hidden">
           <Button
             variant="ghost"
@@ -221,6 +278,24 @@ function UserApp() {
 
       {/* Call Screen Overlay */}
       {activeCall && <CallScreen />}
+
+      {/* Status Viewer Overlay */}
+      {viewingStatusUserId && (
+        <StatusViewer
+          userId={viewingStatusUserId}
+          onClose={() => setViewingStatusUserId(null)}
+        />
+      )}
+
+      {/* Media Gallery Overlay */}
+      {mediaGalleryMsg && (
+        <MediaGallery
+          media={mediaGalleryMsg}
+          onClose={() => setMediaGalleryMsg(null)}
+        />
+      )}
+
+      {/* Sticker/Emoji Picker (rendered inside ChatView via portal or state) */}
     </div>
   );
 }
@@ -252,7 +327,6 @@ function AdminApp() {
           sidebarCollapsed ? 'w-16' : 'w-56'
         }`}
       >
-        {/* Logo */}
         <div className="flex items-center gap-2 border-b border-border px-4 py-4">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
             <Settings className="h-4 w-4 text-primary-foreground" />
@@ -267,8 +341,6 @@ function AdminApp() {
             </motion.span>
           )}
         </div>
-
-        {/* Nav items */}
         <nav className="flex-1 space-y-1 p-2">
           {adminNavItems.map((item) => {
             const Icon = item.icon;
@@ -285,26 +357,17 @@ function AdminApp() {
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 {!sidebarCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="whitespace-nowrap"
-                  >
+                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="whitespace-nowrap">
                     {item.label}
                   </motion.span>
                 )}
                 {isActive && !sidebarCollapsed && (
-                  <motion.div
-                    layoutId="adminNavIndicator"
-                    className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"
-                  />
+                  <motion.div layoutId="adminNavIndicator" className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
                 )}
               </button>
             );
           })}
         </nav>
-
-        {/* Collapse toggle */}
         <div className="border-t border-border p-2">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -316,12 +379,9 @@ function AdminApp() {
         </div>
       </aside>
 
-      {/* Main area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
         <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3">
           <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
             <div className="md:hidden">
               <AdminMobileNav />
             </div>
@@ -333,8 +393,6 @@ function AdminApp() {
           </div>
           <AppSwitcher />
         </header>
-
-        {/* Content */}
         <main className="flex-1 overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
@@ -364,7 +422,6 @@ function AdminMobileNav() {
       <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="h-8 w-8">
         <Settings className="h-4 w-4" />
       </Button>
-
       {open && (
         <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
@@ -387,14 +444,9 @@ function AdminMobileNav() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => {
-                      setTab(item.id);
-                      setOpen(false);
-                    }}
+                    onClick={() => { setTab(item.id); setOpen(false); }}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                      isActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-4 w-4" />

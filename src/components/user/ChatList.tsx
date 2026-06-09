@@ -102,7 +102,7 @@ function ChatListItem({ chat, isActive, isOnline, onClick }: ChatListItemProps) 
   );
 }
 
-export default function ChatList() {
+export default function ChatList({ onNewChat }: { onNewChat?: () => void }) {
   const { chats, activeChat, setActiveChat, setChats, setMessages, searchQuery, setSearchQuery, markAsRead } = useChatStore();
 
   // Initialize mock data on mount
@@ -156,7 +156,7 @@ export default function ChatList() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <h1 className="text-xl font-bold">Chats</h1>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={onNewChat}>
           <Plus className="h-5 w-5" />
         </Button>
       </div>
