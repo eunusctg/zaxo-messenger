@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  QrCode,
-  Scan,
+  Phone,
+  MessageCircle,
   Shield,
   Bell,
   Moon,
@@ -204,25 +204,25 @@ export default function ProfileView() {
             )}
           </div>
 
-          {/* QR buttons */}
+          {/* Quick actions */}
           <div className="flex items-center gap-3 mt-4">
             <Button
               variant="outline"
               size="sm"
               className="rounded-full"
-              onClick={() => setTab('qr')}
+              onClick={() => setTab('calls')}
             >
-              <QrCode className="h-4 w-4 mr-1.5" />
-              QR Code
+              <Phone className="h-4 w-4 mr-1.5" />
+              Calls
             </Button>
             <Button
               variant="outline"
               size="sm"
               className="rounded-full"
-              onClick={() => setTab('qr')}
+              onClick={() => setTab('chats')}
             >
-              <Scan className="h-4 w-4 mr-1.5" />
-              Scan
+              <MessageCircle className="h-4 w-4 mr-1.5" />
+              Chats
             </Button>
           </div>
         </div>

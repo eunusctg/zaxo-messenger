@@ -21,12 +21,18 @@ import {
   BarChart3,
   Link2,
   Image,
+  ChevronDown,
+  Zap,
+  PhoneOff,
+  UserPlus,
+  MonitorUp,
+  CircleDot,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { useChatStore, Message } from '@/stores';
+import { useChatStore, useCallStore, Message } from '@/stores';
 import { mockUsers } from '@/lib/mock-data';
 
 function getInitials(name: string): string {
@@ -310,8 +316,10 @@ export default function ChatView({
   onOpenVoiceRecorder?: () => void;
 }) {
   const { activeChat, messages, setActiveChat } = useChatStore();
+  const { setActiveCall } = useCallStore();
   const [inputText, setInputText] = useState('');
   const [showEmojiHint, setShowEmojiHint] = useState(false);
+  const [showDialMenu, setShowDialMenu] = useState(false);
   const [showStickerPicker, setShowStickerPicker] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -392,13 +400,155 @@ export default function ChatView({
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-            <Phone className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-            <Video className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-1 shrink-0 relative">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 rounded-full relative"
+              onClick={() => setShowDialMenu(!showDialMenu)}
+            >
+              <div className="flash-glow">
+                <Zap className="h-5 w-5 text-primary" />
+              </div>
+            </Button>
+            {/* Dial pulse ring */}
+            <div className="absolute inset-0 rounded-full dial-pulse pointer-events-none" />
+            
+            {/* Dropdown menu */}
+            {showDialMenu && (
+              <>
+                {/* Backdrop */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowDialMenu(false)} />
+                <div className="absolute right-0 top-12 z-50 min-w-[200px] rounded-xl border border-border bg-popover p-1.5 shadow-xl dropdown-slide">
+                  <button
+                    onClick={() => {
+                      if (activeChat) {
+                        const otherMemberId = activeChat.members.find((m) => m !== 'demo-user-1') || activeChat.members[0];
+                        const otherName = activeChat.name;
+                        setActiveCall({
+                          id: `call-${Date.now()}`,
+                          callType: 'audio',
+                          isGroup: false,
+                          participants: [{ id: otherMemberId, name: otherName, avatar: null }],
+                          status: 'ringing',
+                          isMuted: false,
+                          isSpeakerOn: false,
+                          isVideoOn: false,
+                          isRecording: false,
+                          isScreenSharing: false,
+                          isNoiseCancellation: true,
+                          isOnHold: false,
+                          isBluetoothConnected: false,
+                          duration: 0,
+                          callQuality: 'excellent',
+                          networkStrength: 4,
+                        });
+                      }
+                      setShowDialMenu(false);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10">
+                      <Phone className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">Audio Call</p>
+                      <p className="text-[10px] text-muted-foreground">Voice call with encryption</p>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      if (activeChat) {
+                        const otherMemberId = activeChat.members.find((m) => m !== 'demo-user-1') || activeChat.members[0];
+                        const otherName = activeChat.name;
+                        setActiveCall({
+                          id: `call-${Date.now()}`,
+                          callType: 'video',
+                          isGroup: false,
+                          participants: [{ id: otherMemberId, name: otherName, avatar: null }],
+                          status: 'ringing',
+                          isMuted: false,
+                          isSpeakerOn: false,
+                          isVideoOn: true,
+                          isRecording: false,
+                          isScreenSharing: false,
+                          isNoiseCancellation: true,
+                          isOnHold: false,
+                          isBluetoothConnected: false,
+                          duration: 0,
+                          callQuality: 'excellent',
+                          networkStrength: 4,
+                        });
+                      }
+                      setShowDialMenu(false);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                      <Video className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium">Video Call</p>
+                      <p className="text-[10px] text-muted-foreground">HD video with screen share</p>
+                    </div>
+                  </button>
+
+                  {activeChat?.isGroup && (
+                    <>
+                      <div className="my-1 h-px bg-border" />
+                      <button
+                        onClick={() => {
+                          if (activeChat) {
+                            const groupParticipants = activeChat.members.map((mId) => ({
+                              id: mId,
+                              name: mId === 'demo-user-1' ? 'You' : `Member ${mId.slice(-3)}`,
+                              avatar: null,
+                            }));
+                            setActiveCall({
+                              id: `call-${Date.now()}`,
+                              callType: 'video',
+                              isGroup: true,
+                              participants: groupParticipants,
+                              status: 'ringing',
+                              isMuted: false,
+                              isSpeakerOn: false,
+                              isVideoOn: true,
+                              isRecording: false,
+                              isScreenSharing: false,
+                              isNoiseCancellation: true,
+                              isOnHold: false,
+                              isBluetoothConnected: false,
+                              duration: 0,
+                              callQuality: 'excellent',
+                              networkStrength: 4,
+                            });
+                          }
+                          setShowDialMenu(false);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-accent transition-colors"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/10">
+                          <Users className="h-4 w-4 text-violet-500" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium">Group Call</p>
+                          <p className="text-[10px] text-muted-foreground">Call all {activeChat?.members.length} members</p>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                  
+                  <div className="my-1 h-px bg-border" />
+                  
+                  <div className="px-3 py-1.5">
+                    <p className="text-[10px] text-muted-foreground">End-to-end encrypted</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

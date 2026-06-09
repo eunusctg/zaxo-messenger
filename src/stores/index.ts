@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 // ==================== App Store ====================
 export type AppView = 'user' | 'admin';
-export type UserTab = 'chats' | 'status' | 'calls' | 'qr' | 'profile';
+export type UserTab = 'chats' | 'status' | 'calls' | 'profile';
 export type AdminTab = 'dashboard' | 'users' | 'zaxo-numbers' | 'moderation' | 'config' | 'calling' | 'logs' | 'notifications';
 
 interface AppState {
@@ -322,12 +322,19 @@ interface CallState {
     id: string;
     callType: 'audio' | 'video';
     isGroup: boolean;
-    participants: { id: string; name: string; avatar: string | null }[];
+    participants: { id: string; name: string; avatar: string | null; isMuted?: boolean; isVideoOn?: boolean; isSpeaking?: boolean }[];
     status: 'ringing' | 'connected' | 'ended';
     isMuted: boolean;
     isSpeakerOn: boolean;
     isVideoOn: boolean;
+    isRecording: boolean;
+    isScreenSharing: boolean;
+    isNoiseCancellation: boolean;
+    isOnHold: boolean;
+    isBluetoothConnected: boolean;
     duration: number;
+    callQuality: 'excellent' | 'good' | 'fair' | 'poor';
+    networkStrength: number; // 0-4
   } | null;
   callHistory: CallRecord[];
   setActiveCall: (call: CallState['activeCall']) => void;
@@ -335,6 +342,13 @@ interface CallState {
   toggleMute: () => void;
   toggleSpeaker: () => void;
   toggleVideo: () => void;
+  toggleRecording: () => void;
+  toggleScreenShare: () => void;
+  toggleNoiseCancellation: () => void;
+  toggleHold: () => void;
+  toggleBluetooth: () => void;
+  addParticipant: (participant: { id: string; name: string; avatar: string | null }) => void;
+  removeParticipant: (participantId: string) => void;
   endCall: () => void;
   setCallHistory: (history: CallRecord[]) => void;
 }
@@ -358,6 +372,38 @@ export const useCallStore = create<CallState>((set) => ({
   toggleVideo: () =>
     set((s) => ({
       activeCall: s.activeCall ? { ...s.activeCall, isVideoOn: !s.activeCall.isVideoOn } : null,
+    })),
+  toggleRecording: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isRecording: !s.activeCall.isRecording } : null,
+    })),
+  toggleScreenShare: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isScreenSharing: !s.activeCall.isScreenSharing } : null,
+    })),
+  toggleNoiseCancellation: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isNoiseCancellation: !s.activeCall.isNoiseCancellation } : null,
+    })),
+  toggleHold: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isOnHold: !s.activeCall.isOnHold } : null,
+    })),
+  toggleBluetooth: () =>
+    set((s) => ({
+      activeCall: s.activeCall ? { ...s.activeCall, isBluetoothConnected: !s.activeCall.isBluetoothConnected } : null,
+    })),
+  addParticipant: (participant) =>
+    set((s) => ({
+      activeCall: s.activeCall
+        ? { ...s.activeCall, participants: [...s.activeCall.participants, participant], isGroup: true }
+        : null,
+    })),
+  removeParticipant: (participantId) =>
+    set((s) => ({
+      activeCall: s.activeCall
+        ? { ...s.activeCall, participants: s.activeCall.participants.filter((p) => p.id !== participantId) }
+        : null,
     })),
   endCall: () => set({ activeCall: null }),
   setCallHistory: (history) => set({ callHistory: history }),

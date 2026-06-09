@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  MessageCircle, Phone, QrCode, User, Camera,
+  MessageCircle, Phone, User, Camera,
   LayoutDashboard, Users, Hash, Shield, Settings,
   PhoneCall, FileText, Bell, ArrowLeftRight, CircleDot,
 } from 'lucide-react';
@@ -16,8 +16,6 @@ import ChatList from '@/components/user/ChatList';
 import ChatView from '@/components/user/ChatView';
 import CallHistory from '@/components/user/CallHistory';
 import CallScreen from '@/components/user/CallScreen';
-import QRCodeView from '@/components/user/QRCodeView';
-import QRScanner from '@/components/user/QRScanner';
 import ProfileView from '@/components/user/ProfileView';
 import SettingsView from '@/components/user/SettingsView';
 
@@ -50,7 +48,6 @@ const userNavItems = [
   { id: 'chats' as const, icon: MessageCircle, label: 'Chats' },
   { id: 'status' as const, icon: Camera, label: 'Status' },
   { id: 'calls' as const, icon: Phone, label: 'Calls' },
-  { id: 'qr' as const, icon: QrCode, label: 'QR' },
   { id: 'profile' as const, icon: User, label: 'Profile' },
 ];
 
@@ -182,8 +179,6 @@ function UserApp() {
         );
       case 'calls':
         return <CallHistory />;
-      case 'qr':
-        return <QRCodeView />;
       case 'profile':
         return <ProfileView />;
       default:

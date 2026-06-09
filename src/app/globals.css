@@ -184,3 +184,79 @@
 .scanner-line {
   animation: scanLine 2s linear infinite;
 }
+
+/* Flash/Zap icon glow animation */
+@keyframes flashGlow {
+  0%, 100% { filter: drop-shadow(0 0 2px oklch(0.72 0.17 162 / 40%)); }
+  50% { filter: drop-shadow(0 0 8px oklch(0.72 0.17 162 / 80%)) drop-shadow(0 0 16px oklch(0.72 0.17 162 / 40%)); }
+}
+.flash-glow {
+  animation: flashGlow 2s ease-in-out infinite;
+}
+
+/* Dial button pulse ring */
+@keyframes dialPulse {
+  0% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 60%); }
+  70% { box-shadow: 0 0 0 8px oklch(0.72 0.17 162 / 0%); }
+  100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 0%); }
+}
+.dial-pulse {
+  animation: dialPulse 2s ease-out infinite;
+}
+
+/* Call screen ripple for group calls */
+@keyframes callRipple {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.call-ripple::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid oklch(0.72 0.17 162 / 60%);
+  animation: callRipple 2s ease-out infinite;
+}
+
+/* Recording indicator */
+@keyframes recBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.rec-blink {
+  animation: recBlink 1s ease-in-out infinite;
+}
+
+/* Screen share glow border */
+@keyframes screenShareGlow {
+  0%, 100% { border-color: oklch(0.72 0.17 162 / 30%); }
+  50% { border-color: oklch(0.72 0.17 162 / 80%); }
+}
+.screen-share-glow {
+  animation: screenShareGlow 2s ease-in-out infinite;
+  border: 2px solid oklch(0.72 0.17 162 / 30%);
+}
+
+/* Speaking indicator */
+@keyframes speakingGlow {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.17 162 / 30%); }
+  50% { box-shadow: 0 0 0 4px oklch(0.72 0.17 162 / 50%); }
+}
+.speaking-indicator {
+  animation: speakingGlow 1s ease-in-out infinite;
+}
+
+/* Dropdown menu animation */
+@keyframes dropdownSlide {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dropdown-slide {
+  animation: dropdownSlide 0.15s ease-out;
+}
+
+/* Call quality indicator colors */
+.call-quality-excellent { color: oklch(0.75 0.17 145); }
+.call-quality-good { color: oklch(0.72 0.17 162); }
+.call-quality-fair { color: oklch(0.78 0.14 60); }
+.call-quality-poor { color: oklch(0.577 0.245 27.325); }

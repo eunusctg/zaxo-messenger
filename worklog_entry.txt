@@ -1,0 +1,17 @@
+Task ID: 14
+Agent: Main Agent
+Task: Remove QR button, add audio/video/group call system, dial button with flash icon, fix scrolling
+
+Work Log:
+- Removed QR button from bottom navigation (userNavItems now: Chats, Status, Calls, Profile)
+- Removed QRCodeView and QRScanner imports and case from page.tsx
+- Updated UserTab type to remove 'qr' from stores
+- Fixed scrolling: kept overflow-hidden on outer containers for proper flex layout
+- Added dial button with Zap (flash/lightning) icon and flash-glow/dial-pulse CSS animations
+- Dial button opens dropdown with: Audio Call, Video Call, Group Call (for group chats)
+- Completely rebuilt CallScreen with advanced features: recording, screen share, noise cancellation, Bluetooth, hold/resume, add participant, in-call chat, network strength indicator, call quality badge, group call participant grid
+- Completely rebuilt CallHistory with: New Call modal, filter tabs, stats bar, group call badges
+- Added CSS animations: flash-glow, dial-pulse, call-ripple, rec-blink, screen-share-glow, speaking-indicator, dropdown-slide
+- Extended CallState with isRecording, isScreenSharing, isNoiseCancellation, isOnHold, isBluetoothConnected, callQuality, networkStrength
+- Fixed ProfileView to remove QR references
+- Build compiles successfully
