@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCallStore } from '@/stores';
+import LiveKitCall, { fetchLiveKitToken } from '@/components/user/LiveKitCall';
 
 function getInitials(name: string): string {
   return name
@@ -158,6 +159,59 @@ export default function CallScreen() {
   const incomingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoConnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // LiveKit integration state
+  const [livekitToken, setLivekitToken] = useState<string | null>(null);
+  const [livekitRoomName, setLivekitRoomName] = useState<string>('');
+  const [useLiveKit, setUseLiveKit] = useState(false);
+
+  // Fetch LiveKit token when call connects
+  useEffect(() => {
+    if (activeCall?.status === 'connected' && !livekitToken && activeCall.id) {
+      const fetchToken = async () => {
+        const result = await fetchLiveKitToken({
+          identity: 'demo-user-1',
+          name: 'Admin User',
+          callId: activeCall.id,
+          callType: activeCall.callType,
+          isGroup: activeCall.isGroup,
+          canAdmin: true,
+        });
+        if (result) {
+          setLivekitToken(result.token);
+          setLivekitRoomName(result.roomName);
+          setUseLiveKit(true);
+          console.log('[CallScreen] LiveKit token obtained, connecting to room:', result.roomName);
+        } else {
+          console.warn('[CallScreen] Failed to get LiveKit token, using demo mode');
+          setUseLiveKit(false);
+        }
+      };
+      fetchToken();
+    }
+  }, [activeCall?.status, activeCall?.id, livekitToken, activeCall?.callType, activeCall?.isGroup]);
+
+  // Clean up LiveKit state when call ends
+  useEffect(() => {
+    if (!activeCall) {
+      setLivekitToken(null);
+      setLivekitRoomName('');
+      setUseLiveKit(false);
+    }
+  }, [activeCall]);
+
+  const handleLiveKitConnected = useCallback(() => {
+    console.log('[CallScreen] LiveKit connected');
+  }, []);
+
+  const handleLiveKitDisconnected = useCallback(() => {
+    console.log('[CallScreen] LiveKit disconnected');
+  }, []);
+
+  const handleLiveKitError = useCallback((error: Error) => {
+    console.error('[CallScreen] LiveKit error:', error);
+    setUseLiveKit(false); // Fall back to demo mode
+  }, []);
+
   useEffect(() => {
     if (activeCall?.status === 'ringing') {
       incomingTimeoutRef.current = setTimeout(() => setIsIncoming(true), 500);
@@ -209,12 +263,28 @@ export default function CallScreen() {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl"
       >
-        {/* Video call camera preview */}
+        {/* Video call - LiveKit or demo mode */}
         {isVideoCall && activeCall.isVideoOn && isConnected && (
           <div className="absolute inset-0 bg-zinc-900">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-zinc-600 text-sm">Camera Preview</div>
-            </div>
+            {/* LiveKit real video rendering */}
+            {useLiveKit && livekitToken && (
+              <div className="absolute inset-0">
+                <LiveKitCall
+                  token={livekitToken}
+                  roomName={livekitRoomName}
+                  callType={activeCall.callType}
+                  onDisconnected={handleLiveKitDisconnected}
+                  onConnected={handleLiveKitConnected}
+                  onError={handleLiveKitError}
+                />
+              </div>
+            )}
+            {/* Demo mode fallback when LiveKit is not connected */}
+            {!useLiveKit && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-zinc-600 text-sm">Camera Preview (Demo)</div>
+              </div>
+            )}
             {/* Self-view PIP */}
             <motion.div 
               className="absolute top-4 right-4 h-28 w-20 sm:h-36 sm:w-28 rounded-xl bg-zinc-800 border-2 border-white/10 overflow-hidden flex items-center justify-center cursor-move"
