@@ -6,10 +6,11 @@ import {
   MessageCircle, Phone, User,
   LayoutDashboard, Users, Hash, Shield, Settings,
   PhoneCall, FileText, Bell, ArrowLeftRight,
+  Mail, Lock, Loader2, AlertCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useAppStore, useAuthStore, useChatStore, useCallStore, useStatusStore } from '@/stores';
-import { mockChats, mockMessages, mockCallHistory, mockContactStatuses } from '@/lib/mock-data';
 
 // User App Components
 import ChatList from '@/components/user/ChatList';
@@ -32,6 +33,12 @@ import MediaGallery from '@/components/user/MediaGallery';
 import ChatWallpaper from '@/components/user/ChatWallpaper';
 import AppLockScreen from '@/components/user/AppLockScreen';
 import E2EInfo from '@/components/user/E2EInfo';
+
+// New Pages
+import AboutUs from '@/components/user/AboutUs';
+import ContactUs from '@/components/user/ContactUs';
+import TermsAndConditions from '@/components/user/TermsAndConditions';
+import PrivacyPolicy from '@/components/user/PrivacyPolicy';
 
 // Admin App Components
 import Dashboard from '@/components/admin/Dashboard';
@@ -61,6 +68,136 @@ const adminNavItems = [
   { id: 'logs' as const, icon: FileText, label: 'Audit Logs' },
   { id: 'notifications' as const, icon: Bell, label: 'Notifications' },
 ];
+
+// ========== Login Screen ==========
+function LoginScreen() {
+  const { login } = useAuthStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    await new Promise((r) => setTimeout(r, 800));
+    const success = login(email, password);
+    if (!success) {
+      setError('Invalid email or password');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="h-dvh w-screen flex items-center justify-center bg-background p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="w-full max-w-sm"
+      >
+        <div className="flex flex-col items-center mb-8">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+            className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-lg"
+          >
+            <MessageCircle className="h-8 w-8 sm:h-10 sm:w-10 text-primary-foreground" />
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-2xl sm:text-3xl font-bold text-foreground"
+          >
+            Zaxo
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-sm text-muted-foreground mt-1"
+          >
+            Secure Messenger
+          </motion.p>
+        </div>
+
+        <motion.form
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          onSubmit={handleLogin}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 h-11"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 h-11"
+                required
+                autoComplete="current-password"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 rounded-lg px-3 py-2"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
+            </motion.div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full h-11 text-sm font-semibold"
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {loading ? 'Signing in...' : 'Sign In'}
+          </Button>
+        </motion.form>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center"
+        >
+          <p className="text-xs text-muted-foreground">
+            End-to-end encrypted messaging
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            zaxo.eu.cc
+          </p>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
 
 // ========== App Switcher ==========
 function AppSwitcher() {
@@ -109,25 +246,6 @@ function UserApp() {
 
   const [mediaGalleryMsg, setMediaGalleryMsg] = useState<{ url?: string; type: string; name: string; sender: string; time: string } | null>(null);
 
-  // Initialize mock data
-  useEffect(() => {
-    const { chats, setChats, setMessages } = useChatStore.getState();
-    if (chats.length === 0) {
-      setChats(mockChats);
-      Object.entries(mockMessages).forEach(([chatId, msgs]) => {
-        setMessages(chatId, msgs);
-      });
-    }
-    const callStore = useCallStore.getState();
-    if (callStore.callHistory.length === 0) {
-      callStore.setCallHistory(mockCallHistory);
-    }
-    const statusStore = useStatusStore.getState();
-    if (statusStore.contactStatuses.length === 0) {
-      setContactStatuses(mockContactStatuses);
-    }
-  }, [setContactStatuses]);
-
   // Determine if we're viewing a chat on mobile
   const isViewingChat = currentTab === 'chats' && activeChat !== null;
   const showBottomNav = !(currentTab === 'chats' && activeChat !== null) && overlay === 'none';
@@ -167,6 +285,14 @@ function UserApp() {
             />
           </div>
         );
+      case 'about-us':
+        return <AboutUs onClose={() => setOverlay('none')} />;
+      case 'contact-us':
+        return <ContactUs onClose={() => setOverlay('none')} />;
+      case 'terms':
+        return <TermsAndConditions onClose={() => setOverlay('none')} />;
+      case 'privacy-policy':
+        return <PrivacyPolicy onClose={() => setOverlay('none')} />;
       default:
         break;
     }
@@ -458,6 +584,11 @@ function AdminMobileNav() {
 // ========== Main Page ==========
 export default function ZaxoApp() {
   const { currentApp } = useAppStore();
+  const { isAuthenticated } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="h-dvh w-screen overflow-hidden">

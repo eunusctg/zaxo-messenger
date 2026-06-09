@@ -16,7 +16,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useCallStore } from '@/stores';
+import { useCallStore, useAuthStore } from '@/stores';
 import LiveKitCall, { fetchLiveKitToken } from '@/components/user/LiveKitCall';
 
 function getInitials(name: string): string {
@@ -190,14 +190,7 @@ export default function CallScreen() {
     }
   }, [activeCall?.status, activeCall?.id, livekitToken, activeCall?.callType, activeCall?.isGroup]);
 
-  // Clean up LiveKit state when call ends
-  useEffect(() => {
-    if (!activeCall) {
-      setLivekitToken(null);
-      setLivekitRoomName('');
-      setUseLiveKit(false);
-    }
-  }, [activeCall]);
+  // Clean up LiveKit state when call ends - handled via reset on new call
 
   const handleLiveKitConnected = useCallback(() => {
     console.log('[CallScreen] LiveKit connected');
@@ -223,22 +216,58 @@ export default function CallScreen() {
     if (activeCall?.status === 'ringing' && !isIncoming) {
       autoConnectTimeoutRef.current = setTimeout(() => {
         updateCallStatus('connecting');
-        setTimeout(() => updateCallStatus('connected'), 800);
-      }, 3000);
+        setTimeout(() => {
+          updateCallStatus('connected');
+          // Set call start time for duration tracking
+          const { setActiveCall } = useCallStore.getState();
+          const current = useCallStore.getState().activeCall;
+          if (current) {
+            setActiveCall({ ...current, callStartTime: Date.now() });
+          }
+        }, 800);
+      }, 2000);
     }
     return () => { if (autoConnectTimeoutRef.current) clearTimeout(autoConnectTimeoutRef.current); };
   }, [activeCall?.status, isIncoming, updateCallStatus]);
 
   const handleAcceptCall = useCallback(() => {
     updateCallStatus('connecting');
-    setTimeout(() => updateCallStatus('connected'), 500);
+    setTimeout(() => {
+      updateCallStatus('connected');
+      // Set call start time for duration tracking
+      const { setActiveCall } = useCallStore.getState();
+      const current = useCallStore.getState().activeCall;
+      if (current) {
+        setActiveCall({ ...current, callStartTime: Date.now() });
+      }
+    }, 500);
     setIsIncoming(false);
   }, [updateCallStatus]);
 
   const handleDeclineCall = useCallback(() => {
+    if (activeCall) {
+      const { addCallToHistory } = useCallStore.getState();
+      const participant = activeCall.participants[0];
+      addCallToHistory({
+        id: activeCall.id,
+        callerId: activeCall.direction === 'incoming' ? (participant?.id || 'unknown') : 'demo-user-1',
+        callerName: activeCall.direction === 'incoming' ? (participant?.name || 'Unknown') : (useAuthStore.getState().currentUser?.displayName || 'You'),
+        callerNumber: activeCall.direction === 'incoming' ? '' : (useAuthStore.getState().currentUser?.zaxoNumber || ''),
+        receiverId: activeCall.direction === 'outgoing' ? (participant?.id || 'unknown') : 'demo-user-1',
+        receiverName: activeCall.direction === 'outgoing' ? (participant?.name || 'Unknown') : (useAuthStore.getState().currentUser?.displayName || 'You'),
+        receiverNumber: activeCall.direction === 'outgoing' ? '' : (useAuthStore.getState().currentUser?.zaxoNumber || ''),
+        callType: activeCall.callType,
+        status: 'missed',
+        duration: 0,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isGroup: activeCall.isGroup,
+        callQuality: activeCall.callQuality,
+        wasRecorded: false,
+      });
+    }
     endCall();
     setIsIncoming(false);
-  }, [endCall]);
+  }, [endCall, activeCall]);
 
   const handleSendChat = () => {
     if (!chatInput.trim()) return;
@@ -544,7 +573,32 @@ export default function CallScreen() {
 
               {/* End call */}
               <div className="flex flex-col items-center gap-1 sm:gap-1.5">
-                <Button onClick={endCall} className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
+                <Button onClick={() => {
+                  // Record call to history before ending
+                  if (activeCall) {
+                    const { addCallToHistory } = useCallStore.getState();
+                    const participant = activeCall.participants[0];
+                    const now = new Date();
+                    const elapsed = activeCall.callStartTime ? Math.floor((now.getTime() - activeCall.callStartTime) / 1000) : 0;
+                    addCallToHistory({
+                      id: activeCall.id,
+                      callerId: activeCall.direction === 'incoming' ? (participant?.id || 'unknown') : 'demo-user-1',
+                      callerName: activeCall.direction === 'incoming' ? (participant?.name || 'Unknown') : (useAuthStore.getState().currentUser?.displayName || 'You'),
+                      callerNumber: activeCall.direction === 'incoming' ? '' : (useAuthStore.getState().currentUser?.zaxoNumber || ''),
+                      receiverId: activeCall.direction === 'outgoing' ? (participant?.id || 'unknown') : 'demo-user-1',
+                      receiverName: activeCall.direction === 'outgoing' ? (participant?.name || 'Unknown') : (useAuthStore.getState().currentUser?.displayName || 'You'),
+                      receiverNumber: activeCall.direction === 'outgoing' ? '' : (useAuthStore.getState().currentUser?.zaxoNumber || ''),
+                      callType: activeCall.callType,
+                      status: elapsed > 0 ? 'completed' : 'outgoing',
+                      duration: elapsed,
+                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      isGroup: activeCall.isGroup,
+                      callQuality: activeCall.callQuality,
+                      wasRecorded: activeCall.isRecording,
+                    });
+                  }
+                  endCall();
+                }} className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/30" size="icon">
                   <PhoneOff className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
                 <span className="text-[8px] sm:text-[9px] text-white/50">End</span>

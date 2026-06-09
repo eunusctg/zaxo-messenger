@@ -9,7 +9,7 @@ interface AppState {
   currentApp: AppView;
   currentTab: UserTab | AdminTab;
   sidebarOpen: boolean;
-  overlay: 'none' | 'contacts' | 'new-group' | 'new-broadcast' | 'camera' | 'media-gallery' | 'sticker-picker' | 'link-preview' | 'location-share' | 'contact-share' | 'poll-create' | 'chat-wallpaper' | 'app-lock' | 'e2e-info' | 'message-search' | 'voice-recorder' | 'settings' | 'settings-privacy' | 'settings-notifications' | 'settings-appearance' | 'settings-security' | 'settings-account' | 'settings-storage' | 'settings-help';
+  overlay: 'none' | 'contacts' | 'new-group' | 'new-broadcast' | 'camera' | 'media-gallery' | 'sticker-picker' | 'link-preview' | 'location-share' | 'contact-share' | 'poll-create' | 'chat-wallpaper' | 'app-lock' | 'e2e-info' | 'message-search' | 'voice-recorder' | 'settings' | 'settings-privacy' | 'settings-notifications' | 'settings-appearance' | 'settings-security' | 'settings-account' | 'settings-storage' | 'settings-help' | 'about-us' | 'contact-us' | 'terms' | 'privacy-policy';
   setApp: (app: AppView) => void;
   setTab: (tab: UserTab | AdminTab) => void;
   toggleSidebar: () => void;
@@ -30,13 +30,15 @@ export const useAppStore = create<AppState>((set) => ({
 }));
 
 // ==================== Auth Store ====================
+const adminCredentials = { email: 'eunus527@gmail.com', password: 'RAna22@@' };
+
 interface AuthState {
   isAuthenticated: boolean;
   isAdmin: boolean;
   currentUser: UserPayload | null;
   isAppLocked: boolean;
   pinCode: string | null;
-  login: (user: UserPayload, isAdmin?: boolean) => void;
+  login: (email: string, password: string) => boolean;
   logout: () => void;
   lockApp: () => void;
   unlockApp: (pin: string) => void;
@@ -56,22 +58,32 @@ export interface UserPayload {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  isAuthenticated: true,
+  isAuthenticated: false,
   isAdmin: false,
   isAppLocked: false,
   pinCode: null,
-  currentUser: {
-    id: 'demo-user-1',
-    zaxoNumber: '482-719-356',
-    displayName: 'Alex Morgan',
-    profilePicture: null,
-    bio: 'Building cool things with Zaxo!',
-    status: 'Available',
-    isOnline: true,
-    phone: '+1-555-0101',
-    about: 'Hey there! I am using Zaxo',
+  currentUser: null,
+  login: (email: string, password: string) => {
+    if (email === adminCredentials.email && password === adminCredentials.password) {
+      set({
+        isAuthenticated: true,
+        isAdmin: true,
+        currentUser: {
+          id: 'admin-1',
+          zaxoNumber: '482-719-356',
+          displayName: 'Eunus',
+          profilePicture: null,
+          bio: 'Managing Zaxo Messenger',
+          status: 'Available',
+          isOnline: true,
+          phone: '+1-555-0101',
+          about: 'Hey there! I am using Zaxo',
+        },
+      });
+      return true;
+    }
+    return false;
   },
-  login: (user, isAdmin = false) => set({ isAuthenticated: true, currentUser: user, isAdmin }),
   logout: () => set({ isAuthenticated: false, currentUser: null, isAdmin: false }),
   lockApp: () => set({ isAppLocked: true }),
   unlockApp: (pin) => {
@@ -186,7 +198,7 @@ const defaultSettings: Omit<SettingsState, 'updateSetting' | 'updateSettings' | 
 
   // Account
   profilePhoto: null,
-  displayName: 'Alex Morgan',
+  displayName: 'Eunus',
   about: 'Hey there! I am using Zaxo',
   phoneNumber: '+1-555-0101',
   zaxoNumber: '482-719-356',
@@ -479,7 +491,9 @@ interface CallState {
     activeSpeakerId: string | null;
     maxParticipants: number;
     callStartTime: number | null;
+    direction: 'incoming' | 'outgoing';
   } | null;
+  incomingCall: CallRecord | null;
   callHistory: CallRecord[];
   setActiveCall: (call: CallState['activeCall']) => void;
   updateCallStatus: (status: CallState['activeCall'] extends { status: infer S } ? S : never) => void;
@@ -505,10 +519,13 @@ interface CallState {
   removeParticipant: (participantId: string) => void;
   endCall: () => void;
   setCallHistory: (history: CallRecord[]) => void;
+  setIncomingCall: (call: CallRecord | null) => void;
+  addCallToHistory: (call: CallRecord) => void;
 }
 
 export const useCallStore = create<CallState>((set) => ({
   activeCall: null,
+  incomingCall: null,
   callHistory: [],
   setActiveCall: (call) => set({ activeCall: call }),
   updateCallStatus: (status) =>
@@ -605,6 +622,8 @@ export const useCallStore = create<CallState>((set) => ({
     })),
   endCall: () => set({ activeCall: null }),
   setCallHistory: (history) => set({ callHistory: history }),
+  setIncomingCall: (call) => set({ incomingCall: call }),
+  addCallToHistory: (call) => set((s) => ({ callHistory: [call, ...s.callHistory] })),
 }));
 
 // ==================== Status/Stories Store ====================

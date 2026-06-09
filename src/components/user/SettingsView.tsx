@@ -974,6 +974,8 @@ function AccountSettings({ onBack }: { onBack: () => void }) {
 
 // ========== Help & Support Settings ==========
 function HelpSettings({ onBack }: { onBack: () => void }) {
+  const { setOverlay } = useAppStore();
+
   return (
     <div className="flex h-full flex-col bg-background min-h-0">
       <SectionHeader title="Help & Support" onBack={onBack} />
@@ -988,6 +990,7 @@ function HelpSettings({ onBack }: { onBack: () => void }) {
             icon={<MessageCircle className="h-5 w-5 text-primary" />}
             label="Contact support"
             subtitle="Get help from our team"
+            onClick={() => setOverlay('contact-us')}
           />
           <SettingRow
             icon={<BookOpen className="h-5 w-5 text-primary" />}
@@ -1001,18 +1004,17 @@ function HelpSettings({ onBack }: { onBack: () => void }) {
         <SettingSection title="Legal">
           <SettingRow
             icon={<Shield className="h-5 w-5 text-primary" />}
-            label="Terms of Service"
-            rightElement={<ExternalLink className="h-4 w-4 text-muted-foreground" />}
+            label="Terms & Conditions"
+            onClick={() => setOverlay('terms')}
           />
           <SettingRow
             icon={<FileText className="h-5 w-5 text-primary" />}
             label="Privacy Policy"
-            rightElement={<ExternalLink className="h-4 w-4 text-muted-foreground" />}
+            onClick={() => setOverlay('privacy-policy')}
           />
           <SettingRow
             icon={<Lock className="h-5 w-5 text-primary" />}
             label="Cookie Policy"
-            rightElement={<ExternalLink className="h-4 w-4 text-muted-foreground" />}
           />
         </SettingSection>
 
@@ -1020,7 +1022,13 @@ function HelpSettings({ onBack }: { onBack: () => void }) {
 
         <SettingSection title="About">
           <SettingRow
-            icon={<Zap className="h-5 w-5 text-primary" />}
+            icon={<Info className="h-5 w-5 text-primary" />}
+            label="About Us"
+            subtitle="Learn about Zaxo Messenger"
+            onClick={() => setOverlay('about-us')}
+          />
+          <SettingRow
+            icon={<Globe className="h-5 w-5 text-primary" />}
             label="App version"
             subtitle="Zaxo Messenger v1.0.0"
             rightElement={
@@ -1037,7 +1045,7 @@ function HelpSettings({ onBack }: { onBack: () => void }) {
         <div className="px-4 py-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center">
-              <Zap className="h-3.5 w-3.5 text-primary-foreground" />
+              <Phone className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <span className="text-sm font-semibold">Zaxo Messenger</span>
           </div>

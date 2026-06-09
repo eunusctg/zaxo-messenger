@@ -4,9 +4,9 @@ import { useMemo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Video, PhoneOff, ArrowUpRight, ArrowDownLeft,
-  PhoneCall, Users, Zap, Search, Filter, Clock, Star,
+  PhoneCall, Users, Search, Filter, Clock, Star,
   MoreVertical, MessageCircle, Shield, Radio, MonitorUp,
-  Volume2, CircleDot, Wifi, Sparkles,
+  Volume2, CircleDot, Wifi,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useCallStore, CallRecord } from '@/stores';
-import { mockCallHistory, mockUsers } from '@/lib/mock-data';
 
 function getInitials(name: string): string {
   return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -32,10 +31,6 @@ function formatDuration(seconds: number): string {
 function NewCallModal({ onClose, onStartCall }: { onClose: () => void; onStartCall: (userId: string, name: string, type: 'audio' | 'video') => void }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [callType, setCallType] = useState<'audio' | 'video'>('audio');
-
-  const filteredUsers = mockUsers.filter((u) =>
-    u.displayName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <motion.div
@@ -95,30 +90,12 @@ function NewCallModal({ onClose, onStartCall }: { onClose: () => void; onStartCa
 
         {/* Contact list */}
         <ScrollArea className="flex-1">
-          <div className="p-2">
-            {filteredUsers.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => onStartCall(user.id, user.displayName, callType)}
-                className="flex items-center gap-3 w-full px-3 py-3 rounded-xl hover:bg-accent/50 transition-colors"
-              >
-                <Avatar className="h-11 w-11 shrink-0">
-                  <AvatarFallback className={`font-semibold text-sm ${user.isOnline ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                    {getInitials(user.displayName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1 text-left">
-                  <p className="text-sm font-medium truncate">{user.displayName}</p>
-                  <p className="text-xs text-muted-foreground">{user.isOnline ? 'Online' : 'Offline'}</p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className={`h-2 w-2 rounded-full ${user.isOnline ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                    {callType === 'audio' ? <Phone className="h-2.5 w-2.5" /> : <Video className="h-2.5 w-2.5" />}
-                  </Badge>
-                </div>
-              </button>
-            ))}
+          <div className="p-4 flex flex-col items-center justify-center text-center">
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">No contacts yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Add contacts to start making calls</p>
           </div>
         </ScrollArea>
 
@@ -265,15 +242,9 @@ function CallItem({ call, isCurrentUserCaller, onCallBack }: CallItemProps) {
 }
 
 export default function CallHistory() {
-  const { setCallHistory, callHistory, setActiveCall } = useCallStore();
+  const { callHistory, setActiveCall } = useCallStore();
   const [showNewCall, setShowNewCall] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'missed' | 'audio' | 'video' | 'group'>('all');
-
-  useMemo(() => {
-    if (callHistory.length === 0) {
-      setCallHistory(mockCallHistory);
-    }
-  }, [callHistory.length, setCallHistory]);
 
   const filteredCalls = useMemo(() => {
     switch (filterType) {
@@ -341,6 +312,7 @@ export default function CallHistory() {
         activeSpeakerId: null,
         maxParticipants: 32,
         callStartTime: null,
+        direction: 'outgoing',
       });
     },
     [setActiveCall]
@@ -377,6 +349,7 @@ export default function CallHistory() {
         activeSpeakerId: null,
         maxParticipants: 32,
         callStartTime: null,
+        direction: 'outgoing',
       });
       setShowNewCall(false);
     },
@@ -415,9 +388,8 @@ export default function CallHistory() {
             onClick={() => setShowNewCall(true)}
             className="gap-1.5 sm:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-3 sm:px-4 h-8 sm:h-9 text-xs sm:text-sm"
           >
-            <div className="flash-glow relative">
-              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <Sparkles className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-primary-foreground/60 absolute -top-1 -right-1 lightning-flash" />
+            <div className="relative">
+              <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 phone-dial-ring" />
             </div>
             New Call
           </Button>

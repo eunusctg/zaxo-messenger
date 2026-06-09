@@ -24,11 +24,12 @@ import {
   HelpCircle,
   Camera,
   Star,
-  Zap,
   Users,
   Fingerprint,
   Database,
   Info,
+  FileText,
+  Globe,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -289,7 +290,7 @@ export default function ProfileView() {
               className="flex flex-col items-center gap-1 group"
             >
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <Zap className="h-4 w-4 text-primary" />
+                <Globe className="h-4 w-4 text-primary" />
               </div>
               <span className="text-xs text-muted-foreground">Zaxo</span>
             </button>
@@ -351,6 +352,29 @@ export default function ProfileView() {
 
         <Separator />
 
+        {/* Legal Section */}
+        <div className="py-2">
+          <div className="px-4 py-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Legal
+            </span>
+          </div>
+          <SettingItem
+            icon={<FileText className="h-4 w-4 text-primary" />}
+            label="Terms & Conditions"
+            value="Our terms of service"
+            onClick={() => setOverlay('terms')}
+          />
+          <SettingItem
+            icon={<Shield className="h-4 w-4 text-primary" />}
+            label="Privacy Policy"
+            value="How we handle your data"
+            onClick={() => setOverlay('privacy-policy')}
+          />
+        </div>
+
+        <Separator />
+
         {/* Quick toggles */}
         <div className="py-2">
           <div className="px-4 py-2">
@@ -380,7 +404,7 @@ export default function ProfileView() {
         <div className="px-4 py-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <div className="h-6 w-6 rounded-md bg-primary flex items-center justify-center">
-              <Zap className="h-3.5 w-3.5 text-primary-foreground" />
+              <Globe className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
             <span className="text-sm font-semibold text-foreground">Zaxo Messenger</span>
           </div>

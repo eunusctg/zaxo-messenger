@@ -8,8 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { useChatStore } from '@/stores';
-import { mockChats, mockMessages, mockUsers } from '@/lib/mock-data';
+import { useChatStore, Chat } from '@/stores';
 
 function getInitials(name: string): string {
   return name
@@ -37,7 +36,7 @@ function OnlineIndicator() {
 }
 
 interface ChatListItemProps {
-  chat: (typeof mockChats)[0];
+  chat: Chat;
   isActive: boolean;
   isOnline: boolean;
   onClick: () => void;
@@ -103,24 +102,7 @@ function ChatListItem({ chat, isActive, isOnline, onClick }: ChatListItemProps) 
 }
 
 export default function ChatList({ onNewChat }: { onNewChat?: () => void }) {
-  const { chats, activeChat, setActiveChat, setChats, setMessages, searchQuery, setSearchQuery, markAsRead } = useChatStore();
-
-  // Initialize mock data on mount
-  useEffect(() => {
-    if (chats.length === 0) {
-      setChats(mockChats);
-      Object.entries(mockMessages).forEach(([chatId, msgs]) => {
-        setMessages(chatId, msgs);
-      });
-    }
-  }, [chats.length, setChats, setMessages]);
-
-  // Get online users map
-  const onlineUsers = useMemo(() => {
-    const map = new Map<string, boolean>();
-    mockUsers.forEach((u) => map.set(u.id, u.isOnline));
-    return map;
-  }, []);
+  const { chats, activeChat, setActiveChat, searchQuery, setSearchQuery, markAsRead } = useChatStore();
 
   // Filter and sort chats
   const filteredChats = useMemo(() => {
@@ -137,7 +119,7 @@ export default function ChatList({ onNewChat }: { onNewChat?: () => void }) {
     return [...sortedPinned, ...sortedUnpinned];
   }, [chats, searchQuery]);
 
-  const handleChatClick = (chat: (typeof chats)[0]) => {
+  const handleChatClick = (chat: Chat) => {
     setActiveChat(chat);
     if (chat.unreadCount > 0) {
       markAsRead(chat.id);
@@ -145,10 +127,9 @@ export default function ChatList({ onNewChat }: { onNewChat?: () => void }) {
   };
 
   // Get online status for a chat
-  const isChatOnline = (chat: (typeof chats)[0]) => {
+  const isChatOnline = (chat: Chat) => {
     if (chat.isGroup || chat.isChannel) return false;
-    const otherMemberId = chat.members.find((m) => m !== 'demo-user-1');
-    return otherMemberId ? onlineUsers.get(otherMemberId) ?? false : false;
+    return false;
   };
 
   return (

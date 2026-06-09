@@ -21,21 +21,18 @@ import {
   BarChart3,
   Link2,
   Image,
-  Zap,
   PhoneOff,
   UserPlus,
   MonitorUp,
   CircleDot,
   ShieldCheck,
   Radio,
-  Sparkles,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useChatStore, useCallStore, Message } from '@/stores';
-import { mockUsers } from '@/lib/mock-data';
 
 function getInitials(name: string): string {
   return name
@@ -319,17 +316,10 @@ export default function ChatView({
 
   const chatMessages = activeChat ? messages[activeChat.id] || [] : [];
 
-  const onlineUsers = useMemo(() => {
-    const map = new Map<string, boolean>();
-    mockUsers.forEach((u) => map.set(u.id, u.isOnline));
-    return map;
-  }, []);
-
   const isOtherOnline = useMemo(() => {
     if (!activeChat || activeChat.isGroup) return false;
-    const otherMemberId = activeChat.members.find((m) => m !== 'demo-user-1');
-    return otherMemberId ? onlineUsers.get(otherMemberId) ?? false : false;
-  }, [activeChat, onlineUsers]);
+    return false;
+  }, [activeChat]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -381,6 +371,7 @@ export default function ChatView({
       activeSpeakerId: null,
       maxParticipants: 32,
       callStartTime: null,
+      direction: 'outgoing',
     });
     setShowDialMenu(false);
   };
@@ -421,6 +412,7 @@ export default function ChatView({
       activeSpeakerId: null,
       maxParticipants: 32,
       callStartTime: null,
+      direction: 'outgoing',
     });
     setShowDialMenu(false);
   };
@@ -482,22 +474,20 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Dial Button - FIXED: clearly in the header with proper z-index */}
+        {/* Dial Button - Phone icon with ripple animation */}
         <div className="flex items-center gap-1 shrink-0" data-dial-trigger>
           <div className="relative">
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full relative electric-spark"
+              className="h-9 w-9 sm:h-10 sm:w-10 rounded-full relative phone-dial-glow"
               onClick={() => setShowDialMenu(!showDialMenu)}
             >
-              <div className="flash-glow relative">
-                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary/60 absolute -top-1 -right-1 lightning-flash" />
-              </div>
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary phone-dial-ring" />
             </Button>
-            {/* Pulse ring */}
-            <div className="absolute inset-0 rounded-full dial-pulse pointer-events-none" />
+            {/* Ripple rings */}
+            <div className="phone-dial-ripple" />
+            <div className="phone-dial-ripple phone-dial-ripple-delayed" />
             
             {/* Dropdown menu - FIXED: z-50 to be above everything */}
             <AnimatePresence>
