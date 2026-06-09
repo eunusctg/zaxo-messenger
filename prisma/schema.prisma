@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  zaxoNumber      String   @unique
+  displayName     String
+  phoneNumber     String   @unique
+  profilePicture  String?
+  bio             String   @default("")
+  status          String   @default("Hey there! I'm using Zaxo")
+  lastSeen        DateTime @default(now())
+  isOnline        Boolean  @default(false)
+  lastSeenVisible Boolean  @default(true)
+  profileVisible  String   @default("everyone")
+  groupAdd        String   @default("everyone")
+  theme           String   @default("system")
+  twoFactorEnabled Boolean @default(false)
+  isSuspended     Boolean  @default(false)
+  isBanned        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sentMessages     Message[]    @relation("SentMessages")
+  receivedMessages Message[]    @relation("ReceivedMessages")
+  callInitiator    CallLog[]    @relation("CallInitiator")
+  callReceiver     CallLog[]    @relation("CallReceiver")
+  sentReports      Report[]     @relation("ReportReporter")
+  blockedBy        Block[]      @relation("BlockedBy")
+  blockedUsers     Block[]      @relation("BlockedUsers")
+  contacts         Contact[]    @relation("ContactOwner")
+  contactOf        Contact[]    @relation("ContactTarget")
+  sessions         Session[]    @relation("UserSessions")
+  groupMembers     GroupMember[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  ownerId   String
+  targetId  String
+  nickname  String?
+  isFavorite Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  owner  User @relation("ContactOwner", fields: [ownerId], references: [id])
+  target User @relation("ContactTarget", fields: [targetId], references: [id])
+
+  @@unique([ownerId, targetId])
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  content      String
+  messageType  String   @default("text")
+  mediaUrl     String?
+  senderId     String
+  receiverId   String?
+  groupId      String?
+  chatId       String
+  replyToId    String?
+  isForwarded  Boolean  @default(false)
+  isRead       Boolean  @default(false)
+  isDelivered  Boolean  @default(false)
+  reactions    String   @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sender   User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User?    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  replyTo  Message? @relation("MessageReply", fields: [replyToId], references: [id])
+  replies  Message[] @relation("MessageReply")
+  group    Group?   @relation(fields: [groupId], references: [id])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  avatar      String?
+  isChannel   Boolean  @default(false)
+  maxMembers  Int      @default(500)
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members  GroupMember[]
+  messages Message[]
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  groupId String
+  userId  String
+  role    String @default("member")
+
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+model CallLog {
+  id           String   @id @default(cuid())
+  callerId     String
+  receiverId   String
+  callType     String   @default("audio")
+  status       String   @default("completed")
+  duration     Int      @default(0)
+  groupId      String?
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+
+  caller   User  @relation("CallInitiator", fields: [callerId], references: [id])
+  receiver User  @relation("CallReceiver", fields: [receiverId], references: [id])
+}
+
+model Block {
+  id         String   @id @default(cuid())
+  blockerId  String
+  blockedId  String
+  createdAt  DateTime @default(now())
+
+  blocker  User @relation("BlockedBy", fields: [blockerId], references: [id])
+  blocked  User @relation("BlockedUsers", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  targetId    String
+  targetType  String
+  reason      String
+  description String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  reviewedAt  DateTime?
+
+  reporter User @relation("ReportReporter", fields: [reporterId], references: [id])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  device     String   @default("unknown")
+  ipAddress  String?
+  lastActive DateTime @default(now())
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  user User @relation("UserSessions", fields: [userId], references: [id])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  action    String
+  target    String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model NotificationCampaign {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  targetAll Boolean  @default(false)
+  status    String   @default("draft")
+  scheduledAt DateTime?
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model ZaxoNumberPool {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  status    String   @default("available")
+  assignedTo String?
+  isPremium Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
