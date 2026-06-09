@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-static';
+
 export async function GET(request: Request) {
   try {
     // Get user ID from custom header (set by client)

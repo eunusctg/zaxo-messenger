@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-static';
+
 export async function POST(request: Request) {
   try {
     const userId = request.headers.get('x-user-id');

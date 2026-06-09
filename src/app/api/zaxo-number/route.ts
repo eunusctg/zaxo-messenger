@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-static';
+
 function generateZaxoNumber(): string {
   const part1 = Math.floor(Math.random() * 900 + 100);
   const part2 = Math.floor(Math.random() * 900 + 100);

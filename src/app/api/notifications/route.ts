@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendCallNotification, sendMessageNotification } from '@/lib/firebase-admin';
 
+export const dynamic = 'force-static';
+
 /**
  * POST /api/notifications
  * Send a push notification via Firebase Cloud Messaging.

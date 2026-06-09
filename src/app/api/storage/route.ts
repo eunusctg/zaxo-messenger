@@ -5,6 +5,8 @@ import {
   generateMediaKey,
 } from '@/lib/r2-storage';
 
+export const dynamic = 'force-static';
+
 /**
  * POST /api/storage
  * Upload a file to Cloudflare R2 storage.

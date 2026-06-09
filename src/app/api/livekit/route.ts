@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateLiveKitToken, generateRoomName } from '@/lib/livekit';
 
+export const dynamic = 'force-static';
+
 /**
  * POST /api/livekit
  * Generate a LiveKit access token for a participant to join a call room.
